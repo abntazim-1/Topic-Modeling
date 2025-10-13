@@ -1,0 +1,112 @@
+###############
+# Python
+###############
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+###############
+# Packaging / Build
+###############
+build/
+dist/
+sdist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+###############
+# Virtual Environments
+###############
+.venv/
+venv/
+ENV/
+env/
+.conda/
+*.conda
+
+###############
+# Jupyter / IPython
+###############
+.ipynb_checkpoints/
+.ipython/
+.jupyter/
+.jupyter/lab/workspaces/
+
+###############
+# Testing / Type checking / Coverage
+###############
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+nosetests.xml
+
+###############
+# Logs & Temp
+###############
+*.log
+logs/
+tmp/
+temp/
+.cache/
+
+###############
+# Editors / IDE
+###############
+.vscode/
+.idea/
+.history/
+
+###############
+# Operating System
+###############
+.DS_Store
+Thumbs.db
+Desktop.ini
+.AppleDouble
+.LSOverride
+
+###############
+# Env & Secrets
+###############
+.env
+.env.*
+*.env
+secrets.*
+secret.*
+config/*.local.*
+config/*.secret.*
+config/*secrets*.*
+config/*credentials*.*
+
+###############
+# Project Artifacts / Data / Models
+###############
+artifacts/
+data/
+data/**/*
+!data/.gitkeep
+outputs/
+models/
+checkpoints/
+
+###############
+# Docs
+###############
+docs/_build/
+
+###############
+# Docker
+###############
+docker/tmp/
+docker/*.env
+docker/.env
+
+
