@@ -1,11 +1,11 @@
 ###############
 # Python
 ###############
-__pycache__/
-**/__pycache__/
-*.py[cod]
-*$py.class
-*.so
+#__pycache__/
+#**/__pycache__/
+#*.py[cod]
+#*$py.class
+#*.so
 
 ###############
 # Packaging / Build
@@ -38,7 +38,7 @@ env/
 ###############
 # Testing / Type checking / Coverage
 ###############
-.pytest_cache/
+#.pytest_cache/
 .mypy_cache/
 .pyre/
 .pytype/
@@ -52,7 +52,7 @@ nosetests.xml
 # Logs & Temp
 ###############
 *.log
-logs/
+
 tmp/
 temp/
 .cache/
@@ -89,12 +89,11 @@ config/*credentials*.*
 ###############
 # Project Artifacts / Data / Models
 ###############
-artifacts/
-data/
+
 data/**/*
 !data/.gitkeep
 outputs/
-models/
+
 checkpoints/
 
 ###############
