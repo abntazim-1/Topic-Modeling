@@ -1,0 +1,10 @@
+{
+  "max_features": 2000,
+  "nmf_params": {
+    "beta_loss": "frobenius",
+    "alpha_W": 0.0,
+    "alpha_H": 0.0,
+    "l1_ratio": 0.0
+  },
+  "n_topics": 8
+}
