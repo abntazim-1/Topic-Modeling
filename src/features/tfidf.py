@@ -8,6 +8,13 @@ from src.utils.exceptions import AppException
 import pandas as pd
 import os
 
+# Define tokenizer and preprocessor functions outside of class for pickling
+def custom_tokenizer(x):
+    return x if isinstance(x, list) else x.split()
+    
+def custom_preprocessor(x):
+    return x  # Assume already preprocessed
+
 
 class TFIDFVectorizerWrapper:
     """
@@ -43,8 +50,8 @@ class TFIDFVectorizerWrapper:
             max_df=max_df,
             max_features=max_features,
             stop_words=stop_words,
-            tokenizer=lambda x: x if isinstance(x, list) else x.split(),
-            preprocessor=lambda x: x,  # Assume already preprocessed
+            tokenizer=custom_tokenizer,
+            preprocessor=custom_preprocessor,
             token_pattern=None,
             **kwargs
         )
@@ -90,13 +97,15 @@ class TFIDFVectorizerWrapper:
             self.logger.error("TF-IDF vectorizer not fitted.")
             raise AppException("TFIDFVectorizerWrapper: Vectorizer must be fitted before use.") from e
 
-    def fit_transform(self, texts: List[Union[str, List[str]]]):
+    def fit_transform(self, texts: List[Union[str, List[str]]]) -> Tuple:
         """
         Fit and transform the texts.
         Args:
             texts: List of cleaned strings, or List of token lists.
         Returns:
-            Sparse TF-IDF matrix
+            Tuple containing:
+                - corpus: Sparse TF-IDF matrix
+                - id2word: Dictionary mapping word IDs to words
         Raises:
             AppException: If input invalid.
         """
@@ -105,8 +114,12 @@ class TFIDFVectorizerWrapper:
             raise AppException("TFIDFVectorizerWrapper.fit_transform: Input text list is empty or not a list.")
         matrix = self.vectorizer.fit_transform(texts)
         self.fitted = True
+        
+        # Create id2word dictionary from vocabulary
+        id2word = {id: word for word, id in self.vectorizer.vocabulary_.items()}
+        
         self.logger.info(f"TF-IDF vectorizer fit and transformed {len(texts)} documents. Shape: {matrix.shape}.")
-        return matrix
+        return matrix, id2word
 
     def get_feature_names(self) -> List[str]:
         """

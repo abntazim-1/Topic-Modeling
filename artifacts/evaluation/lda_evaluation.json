@@ -1,0 +1,231 @@
+{
+    "model_type": "lda",
+    "topics_csv": "artifacts\\lda_topics.csv",
+    "evaluation_time": "2025-10-16 08:58:17",
+    "metrics": {
+        "topic_diversity": 0.78,
+        "num_topics": 10
+    },
+    "top_words_per_topic": {
+        "topic_0": [
+            {
+                "word": "plug",
+                "weight": 0.0001
+            },
+            {
+                "word": "plunge",
+                "weight": 0.0001
+            },
+            {
+                "word": "pleased",
+                "weight": 0.0001
+            },
+            {
+                "word": "pleasure",
+                "weight": 0.0001
+            },
+            {
+                "word": "pledge",
+                "weight": 0.0001
+            }
+        ],
+        "topic_1": [
+            {
+                "word": "broadband",
+                "weight": 0.0174
+            },
+            {
+                "word": "film",
+                "weight": 0.0119
+            },
+            {
+                "word": "mail",
+                "weight": 0.0111
+            },
+            {
+                "word": "title",
+                "weight": 0.0105
+            },
+            {
+                "word": "allow",
+                "weight": 0.0094
+            }
+        ],
+        "topic_2": [
+            {
+                "word": "celltick",
+                "weight": 0.0001
+            },
+            {
+                "word": "pew",
+                "weight": 0.0001
+            },
+            {
+                "word": "herren",
+                "weight": 0.0001
+            },
+            {
+                "word": "send multimedia_message",
+                "weight": 0.0001
+            },
+            {
+                "word": "icstis",
+                "weight": 0.0001
+            }
+        ],
+        "topic_3": [
+            {
+                "word": "technology",
+                "weight": 0.0262
+            },
+            {
+                "word": "player",
+                "weight": 0.0226
+            },
+            {
+                "word": "music",
+                "weight": 0.0197
+            },
+            {
+                "word": "online",
+                "weight": 0.0158
+            },
+            {
+                "word": "internet",
+                "weight": 0.0107
+            }
+        ],
+        "topic_4": [
+            {
+                "word": "pew",
+                "weight": 0.0001
+            },
+            {
+                "word": "celltick",
+                "weight": 0.0001
+            },
+            {
+                "word": "herren",
+                "weight": 0.0001
+            },
+            {
+                "word": "send multimedia_message",
+                "weight": 0.0001
+            },
+            {
+                "word": "icstis",
+                "weight": 0.0001
+            }
+        ],
+        "topic_5": [
+            {
+                "word": "people",
+                "weight": 0.0238
+            },
+            {
+                "word": "software",
+                "weight": 0.0154
+            },
+            {
+                "word": "send",
+                "weight": 0.0083
+            },
+            {
+                "word": "file",
+                "weight": 0.008
+            },
+            {
+                "word": "run",
+                "weight": 0.0072
+            }
+        ],
+        "topic_6": [
+            {
+                "word": "computer",
+                "weight": 0.0295
+            },
+            {
+                "word": "phone",
+                "weight": 0.025
+            },
+            {
+                "word": "pc",
+                "weight": 0.0208
+            },
+            {
+                "word": "website",
+                "weight": 0.014
+            },
+            {
+                "word": "protect",
+                "weight": 0.0091
+            }
+        ],
+        "topic_7": [
+            {
+                "word": "pew",
+                "weight": 0.0001
+            },
+            {
+                "word": "herren",
+                "weight": 0.0001
+            },
+            {
+                "word": "celltick",
+                "weight": 0.0001
+            },
+            {
+                "word": "send multimedia_message",
+                "weight": 0.0001
+            },
+            {
+                "word": "icstis",
+                "weight": 0.0001
+            }
+        ],
+        "topic_8": [
+            {
+                "word": "mmorpgs",
+                "weight": 0.0001
+            },
+            {
+                "word": "umd",
+                "weight": 0.0001
+            },
+            {
+                "word": "bot_net",
+                "weight": 0.0001
+            },
+            {
+                "word": "mobile pc",
+                "weight": 0.0001
+            },
+            {
+                "word": "argonaut",
+                "weight": 0.0001
+            }
+        ],
+        "topic_9": [
+            {
+                "word": "game",
+                "weight": 0.0053
+            },
+            {
+                "word": "mobile",
+                "weight": 0.0046
+            },
+            {
+                "word": "user",
+                "weight": 0.0037
+            },
+            {
+                "word": "service",
+                "weight": 0.0033
+            },
+            {
+                "word": "year",
+                "weight": 0.003
+            }
+        ]
+    }
+}

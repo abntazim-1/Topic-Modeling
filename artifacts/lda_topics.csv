@@ -1,0 +1,11 @@
+topic_id,words
+0,"[('plug', 1e-04), ('plunge', 1e-04), ('pleased', 1e-04), ('pleasure', 1e-04), ('pledge', 1e-04), ('plenty', 1e-04), ('plot', 1e-04), ('plough', 1e-04), ('plead_guilty_charge', 1e-04), ('plunder', 1e-04)]"
+1,"[('broadband', 0.0174), ('film', 0.0119), ('mail', 0.0111), ('title', 0.0105), ('allow', 0.0094), ('operator', 0.009), ('miss', 0.0064), ('connection', 0.0064), ('sun', 0.0064), ('channel', 0.0058)]"
+2,"[('celltick', 1e-04), ('pew', 1e-04), ('herren', 1e-04), ('send multimedia_message', 1e-04), ('icstis', 1e-04), ('herren say', 1e-04), ('atp', 1e-04), ('marine_chronometer', 1e-04), ('umd', 1e-04), ('voip', 1e-04)]"
+3,"[('technology', 0.0262), ('player', 0.0226), ('music', 0.0197), ('online', 0.0158), ('internet', 0.0107), ('message', 0.0097), ('team', 0.0097), ('problem', 0.0091), ('develop', 0.0068), ('line', 0.0068)]"
+4,"[('pew', 1e-04), ('celltick', 1e-04), ('herren', 1e-04), ('send multimedia_message', 1e-04), ('icstis', 1e-04), ('herren say', 1e-04), ('bot_net', 1e-04), ('umd', 1e-04), ('swiss_army_knife', 1e-04), ('argonaut', 1e-04)]"
+5,"[('people', 0.0238), ('software', 0.0154), ('send', 0.0083), ('file', 0.008), ('run', 0.0072), ('customer', 0.0069), ('research', 0.0067), ('lot', 0.0067), ('release', 0.0065), ('hour', 0.0055)]"
+6,"[('computer', 0.0295), ('phone', 0.025), ('pc', 0.0208), ('website', 0.014), ('protect', 0.0091), ('picture', 0.0081), ('sport', 0.0072), ('bbc', 0.0062), ('window', 0.006), ('carry', 0.0058)]"
+7,"[('pew', 1e-04), ('herren', 1e-04), ('celltick', 1e-04), ('send multimedia_message', 1e-04), ('icstis', 1e-04), ('herren say', 1e-04), ('umd', 1e-04), ('bot_net', 1e-04), ('swiss_army_knife', 1e-04), ('pocket_calculator', 1e-04)]"
+8,"[('mmorpgs', 1e-04), ('umd', 1e-04), ('bot_net', 1e-04), ('mobile pc', 1e-04), ('argonaut', 1e-04), ('cross country', 1e-04), ('celltick', 1e-04), ('send multimedia_message', 1e-04), ('voip', 1e-04), ('sinclair', 1e-04)]"
+9,"[('game', 0.0053), ('mobile', 0.0046), ('user', 0.0037), ('service', 0.0033), ('year', 0.003), ('play', 0.003), ('net', 0.0028), ('new', 0.0028), ('use', 0.0028), ('network', 0.0026)]"
