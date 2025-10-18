@@ -1,0 +1,148 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>README.md</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 920px; margin: 2rem auto; padding: 0 1rem; }
+    pre, code { background:#f6f8fa; padding:0.2rem 0.4rem; border-radius:4px; }
+    table { border-collapse: collapse; }
+    th, td { border:1px solid #ddd; padding: 6px 8px; }
+  </style>
+</head>
+<body>
+  <h1 id="topic-modeling-project">Topic Modeling Project</h1>
+<p>End-to-end topic modeling toolkit for analyzing text corpora using LDA and NMF. Includes data preprocessing, model training, evaluation, visualization, logging, and an optional web API.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>LDA and NMF topic models with configurable hyperparameters</li>
+<li>Data ingestion and preprocessing (tokenization, stopword removal, TF–IDF)</li>
+<li>Evaluation from CSV or trained models (diversity, coherence, heatmaps)</li>
+<li>Visualizations: topic-word heatmaps and comparison plots</li>
+<li>Clean logging with persistent run logs and minimal warnings</li>
+<li>CLI utilities and a simple FastAPI server (optional)</li>
+<li>Docker support and reproducible runs via <code>Makefile</code></li>
+</ul>
+<h2 id="project-structure">Project Structure</h2>
+<pre><code>g:\Topic Modeling Project/
+├── artifacts/                 # Datasets, models, topics, evaluation outputs
+├── config/                    # App, logging, and model registry configs
+├── docs/                      # Architecture and API docs
+├── src/                       # Source code (CLI, models, API, pipelines, utils)
+├── notebooks/                 # Exploration and experiments
+├── tests/                     # Unit/integration/E2E tests
+├── docker/                    # Dockerfile and compose
+├── logs/                      # Persistent project logs
+├── evaluate_models.py         # Convenience wrapper to evaluate LDA/NMF
+├── Makefile                   # Common tasks (build, test, format)
+└── README.md
+</code></pre>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Python 3.10+ (tested on 3.11)</li>
+<li>OS: Windows, macOS, or Linux</li>
+<li>Recommended: virtual environment</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre><code># Clone and enter the project
+git clone &lt;your-repo-url&gt;
+cd &quot;Topic Modeling Project&quot;
+
+# Create and activate a virtual environment
+python -m venv .venv
+.\.venv\Scripts\activate           # Windows
+# source .venv/bin/activate          # macOS/Linux
+
+# Install dependencies
+pip install -r requirements
+</code></pre>
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="evaluate-existing-topics-csv">Evaluate existing topics (CSV)</h3>
+<p>Evaluate LDA topics from <code>artifacts/lda_topics.csv</code> and save metrics/plots to <code>artifacts/evaluation/</code>:</p>
+<pre><code>python -m src.models.evaluate --model-type lda --topics-csv artifacts/lda_topics.csv --output-dir artifacts/evaluation
+</code></pre>
+<p>Evaluate NMF topics:</p>
+<pre><code>python -m src.models.evaluate --model-type nmf --topics-csv artifacts/nmf_topics.csv --output-dir artifacts/evaluation
+</code></pre>
+<p>Or use the convenience wrapper to evaluate both models:</p>
+<pre><code>python evaluate_models.py
+</code></pre>
+<p>Outputs include:</p>
+<ul>
+<li><code>artifacts/evaluation/&lt;model&gt;_evaluation.json</code></li>
+<li><code>artifacts/evaluation/&lt;model&gt;_topic_heatmap.png</code></li>
+<li><code>artifacts/evaluation/model_comparison.png</code> (when comparing)</li>
+<li><code>artifacts/evaluation/&lt;model&gt;_evaluation.log</code> (per-run logs)</li>
+</ul>
+<h3 id="cli-help">CLI Help</h3>
+<pre><code>python -m src.models.evaluate --help
+python -m src.cli.cli --help
+</code></pre>
+<h2 id="training-and-inference">Training and Inference</h2>
+<ul>
+<li>Training script: <code>python -m src.models.train --help</code></li>
+<li>Inference script: <code>python -m src.models.infer --help</code></li>
+</ul>
+<p>These scripts integrate with <code>src/topics/</code> implementations (<code>lda_model.py</code>, <code>nmf_model.py</code>) and <code>src/features/</code> for TF–IDF/embeddings.</p>
+<h2 id="logging">Logging</h2>
+<ul>
+<li>Project-level logs: <code>logs/project.log</code></li>
+<li>Wrapper logs: <code>artifacts/evaluation/evaluate_models.log</code></li>
+<li>Per-evaluation logs: <code>artifacts/evaluation/&lt;model&gt;_evaluation.log</code></li>
+</ul>
+<p>Customize log output path via environment:</p>
+<pre><code>set LOG_FILE_PATH=g:\Topic Modeling Project\logs\custom.log   # Windows
+# export LOG_FILE_PATH=&quot;$(pwd)/logs/custom.log&quot;                # macOS/Linux
+</code></pre>
+<p>Logging is configured by <code>src/utils/logger.py</code> and is set up automatically by CLI and wrappers. Noisy import-time messages (e.g., TensorFlow info) are minimized.</p>
+<h2 id="configuration">Configuration</h2>
+<ul>
+<li>Main config: <code>config/config.yaml</code></li>
+<li>Logging config (optional): <code>config/logging.yaml</code></li>
+<li>Model registry: <code>config/model_registry.yaml</code></li>
+</ul>
+<p>Override settings via environment variables or by editing config files. Most CLI commands accept <code>--output-dir</code> and other flags for paths.</p>
+<h2 id="api-optional">API (Optional)</h2>
+<p>Launch the FastAPI server locally:</p>
+<pre><code>pip install uvicorn fastapi
+uvicorn src.api.app:app --reload
+</code></pre>
+<p>See <code>docs/api.md</code> for routes and usage.</p>
+<h2 id="docker">Docker</h2>
+<p>Build and run using Docker:</p>
+<pre><code># Build the image
+docker build -t topic-modeling -f docker/Dockerfile .
+
+# Run with compose
+docker compose -f docker/docker-compose.yml up --build
+</code></pre>
+<h2 id="makefile-common-tasks">Makefile (Common Tasks)</h2>
+<pre><code># Lint, test, and format
+make lint
+make test
+make format
+
+# Build docker image
+make build-image
+</code></pre>
+<h2 id="tests">Tests</h2>
+<p>Run the unit/integration test suites:</p>
+<pre><code>pip install pytest
+pytest -q
+</code></pre>
+<h2 id="notebooks">Notebooks</h2>
+<p>Exploratory notebooks are available under <code>notebooks/</code>. For reproducibility, prefer running CLI commands or pipelines instead of notebooks for production tasks.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Evaluation: CSV-based evaluation assumes files like <code>artifacts/lda_topics.csv</code> and <code>artifacts/nmf_topics.csv</code> with topic-word distributions.</li>
+<li>Warnings: The codebase filters out common noisy warnings to keep logs clean.</li>
+<li>Paths: Use forward slashes or escape backslashes on Windows.</li>
+</ul>
+<h2 id="contributing">Contributing</h2>
+<p>Pull requests are welcome. Please add tests for new features and keep changes minimal and focused.</p>
+<h2 id="license">License</h2>
+<p>Distributed under the terms of the MIT License. See <code>LICENSE</code> for details.</p>
+</body>
+</html>
