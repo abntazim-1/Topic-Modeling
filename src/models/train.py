@@ -1,8 +1,13 @@
 import os
+import sys
 import argparse
 import joblib
 import pandas as pd
 from typing import Optional, List
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
 
 from src.utils.logger import get_logger
 from src.utils.exceptions import AppException, DataValidationError
@@ -11,9 +16,9 @@ from src.utils.exceptions import AppException, DataValidationError
 from src.features.tfidf import TFIDFVectorizerWrapper
 #from src.features.embeddings import CountVectorizerWrapper  # hypothetical module
 
-# Import modelers
-from src.topics.lda_model import LDAModeler  # your provided class
-from src.topics.nmf_model import NMFModeler  # assumed similar structure to LDA
+# Import model definitions
+from src.topics.lda_model import LDA
+from src.topics.nmf_model import NMF
 
 
 class TopicModelTrainer:
@@ -56,11 +61,27 @@ class TopicModelTrainer:
                 raise FileNotFoundError(f"File not found: {self.data_path}")
 
             df = pd.read_csv(self.data_path)
-            if 'cleaned_text' not in df.columns:
-                raise DataValidationError("Missing required 'cleaned_text' column in dataset.")
-            
-            # Use cleaned_text column for better topic modeling with valuable words
-            self.texts = df['cleaned_text'].astype(str).tolist()
+            # Prefer tokenized column if available; fallback to cleaned_text
+            token_col = None
+            if 'tokens' in df.columns:
+                token_col = 'tokens'
+            elif 'cleaned_tokens' in df.columns:
+                token_col = 'cleaned_tokens'
+
+            if token_col:
+                import ast
+                try:
+                    tokens_series = df[token_col]
+                    if tokens_series.dtype == object and isinstance(tokens_series.iloc[0], str):
+                        tokens_series = tokens_series.apply(ast.literal_eval)
+                except Exception:
+                    raise DataValidationError(f"Column '{token_col}' must contain lists or stringified lists of tokens.")
+                self.texts = tokens_series.tolist()
+            else:
+                if 'cleaned_text' not in df.columns:
+                    raise DataValidationError("Missing required 'tokens' or 'cleaned_text' column in dataset.")
+                # Use cleaned_text as space-joined tokens
+                self.texts = df['cleaned_text'].astype(str).apply(lambda s: s.split()).tolist()
             self.logger.info(f"Loaded {len(self.texts)} documents from {self.data_path}.")
         except Exception as e:
             self.logger.error(f"Error loading data: {e}")
@@ -75,35 +96,34 @@ class TopicModelTrainer:
 
             if self.vectorizer_type == "tfidf":
                 self.vectorizer = TFIDFVectorizerWrapper(
-                    ngram_range=(1, 2), min_df=2, max_df=0.95, max_features=10000
+                    ngram_range=(1, 1), min_df=3, max_df=0.9, max_features=30000
                 )
             elif self.vectorizer_type == "bow":
-                self.vectorizer = CountVectorizerWrapper(min_df=2, max_df=0.95, ngram_range=(1, 2))
+                # Fallback: approximate BoW with TF-IDF configured as unigram, higher max_features
+                self.vectorizer = TFIDFVectorizerWrapper(
+                    ngram_range=(1, 1), min_df=2, max_df=0.95, max_features=30000
+                )
             else:
                 raise ValueError(f"Unsupported vectorizer type: {self.vectorizer_type}")
 
-            matrix, self.id2word = self.vectorizer.fit_transform(self.texts)
+            # Store the matrix and feature names for both LDA and NMF
+            # If texts are token lists, join to strings for TF-IDF
+            joined = [" ".join(t) if isinstance(t, list) else str(t) for t in self.texts]
+            self.matrix, self.feature_names = self.vectorizer.fit_transform(joined)
             
-            # Convert sparse matrix to gensim corpus format (list of list of tuples)
-            from scipy import sparse
-            import numpy as np
-            from gensim.corpora import Dictionary
-            
-            # Convert id2word dict to gensim Dictionary using a safer approach
-            # Create a gensim Dictionary directly from feature names
-            from gensim.corpora import Dictionary
-            feature_names = self.vectorizer.get_feature_names()
-            gensim_dict = Dictionary([feature_names])
-            self.id2word = gensim_dict
-            
-            # Convert sparse matrix to gensim corpus format
-            self.corpus = []
-            for i in range(matrix.shape[0]):
-                # Get non-zero elements in this document
-                row = matrix[i].tocoo()
-                # Add as (term_id, term_weight) tuples
-                doc = [(int(term_id), float(weight)) for term_id, weight in zip(row.col, row.data)]
-                self.corpus.append(doc)
+            # For LDA, convert to gensim corpus format
+            if self.model_type == "lda":
+                from gensim.corpora import Dictionary
+
+                # Build dictionary from tokenized texts (better mapping than feature_names)
+                if all(isinstance(x, list) for x in self.texts):
+                    self.id2word = Dictionary(self.texts)
+                    self.corpus = [self.id2word.doc2bow(tokens) for tokens in self.texts]
+                else:
+                    # Fallback: split cleaned strings
+                    tokenized = [str(s).split() for s in self.texts]
+                    self.id2word = Dictionary(tokenized)
+                    self.corpus = [self.id2word.doc2bow(tokens) for tokens in tokenized]
                 
             self.logger.info(f"Vectorization complete using {self.vectorizer_type.upper()} vectorizer.")
         except Exception as e:
@@ -115,35 +135,45 @@ class TopicModelTrainer:
         """Trains either LDA or NMF model based on configuration."""
         try:
             if self.model_type == "lda":
-                self.model = LDAModeler(num_topics=self.num_topics, random_state=self.random_state)
-                self.model.train(self.corpus, self.id2word)
+                # Create LDA model with strong hyperparameters
+                self.model = LDA(
+                    num_topics=self.num_topics,
+                    passes=20,
+                    chunksize=2000,
+                    iterations=800,
+                    update_every=1,
+                    alpha='auto',
+                    eta='auto',
+                    random_state=self.random_state
+                )
+                
+                # Train the model (gensim LdaModel is trained during construction)
+                lda_model = self.model.create_model(corpus=self.corpus, id2word=self.id2word)
+                self.model.set_model(lda_model)
+                
+                self.logger.info(f"LDA model trained with {self.model.num_topics} topics")
 
             elif self.model_type == "nmf":
-                self.model = NMFModeler(num_topics=self.num_topics, random_state=self.random_state)
-                # NMF needs the TF-IDF matrix and feature names
-                from scipy import sparse
-                import numpy as np
+                # Create NMF model with strong hyperparameters
+                self.model = NMF(
+                    num_topics=self.num_topics,
+                    init='nndsvda',
+                    max_iter=600,
+                    alpha=0.1,
+                    l1_ratio=0.5,
+                    random_state=self.random_state
+                )
                 
-                # Convert corpus back to sparse matrix format for NMF
-                rows = []
-                cols = []
-                data = []
-                for doc_idx, doc in enumerate(self.corpus):
-                    for term_id, weight in doc:
-                        rows.append(doc_idx)
-                        cols.append(term_id)
-                        data.append(weight)
+                # Train the model
+                nmf_model = self.model.create_model()
+                document_topic_matrix = nmf_model.fit_transform(self.matrix)
+                topic_term_matrix = nmf_model.components_
                 
-                # Create sparse matrix
-                num_docs = len(self.corpus)
-                num_terms = len(self.id2word)
-                tfidf_matrix = sparse.csr_matrix((data, (rows, cols)), shape=(num_docs, num_terms))
+                self.model.set_model(nmf_model)
+                self.model.set_feature_names(self.feature_names)
+                self.model.set_matrices(document_topic_matrix, topic_term_matrix)
                 
-                # Get feature names from id2word
-                feature_names = [self.id2word[i] for i in range(len(self.id2word))]
-                
-                # Train NMF model
-                self.model.train(tfidf_matrix, feature_names)
+                self.logger.info(f"NMF model trained with {self.model.num_topics} topics")
 
             else:
                 raise ValueError(f"Unsupported model type: {self.model_type}")
@@ -161,10 +191,7 @@ class TopicModelTrainer:
             vectorizer_path = os.path.join(self.output_dir, f"{self.vectorizer_type}_vectorizer.pkl")
 
             # Save model
-            if self.model_type == "lda":
-                self.model.save_model(model_path)
-            else:
-                joblib.dump(self.model, model_path)
+            self.model.save_model(model_path)
 
             # Save vectorizer
             joblib.dump(self.vectorizer, vectorizer_path)
@@ -183,17 +210,18 @@ class TopicModelTrainer:
     def log_training_summary(self) -> None:
         """Logs key training metrics and sample topics."""
         try:
-            coherence = self.model.compute_coherence_score(self.texts, self.id2word)
-            self.logger.info(f"Coherence Score (c_v): {coherence:.4f}")
-
-            if self.model_type == "lda":
-                perplexity = self.model.compute_perplexity(self.corpus)
-                self.logger.info(f"Perplexity: {perplexity:.4f}")
-
             top_topics = self.model.get_topics(num_words=8)
             self.logger.info("Top topics and keywords:")
             for topic in top_topics:
                 self.logger.info(f"Topic {topic['topic_id']}: {[w for w, _ in topic['words']]}")
+                
+            if self.model_type == "lda":
+                perplexity = self.model.compute_perplexity(self.corpus)
+                self.logger.info(f"Perplexity: {perplexity:.4f}")
+            elif self.model_type == "nmf":
+                reconstruction_error = self.model.get_reconstruction_error()
+                self.logger.info(f"Reconstruction Error: {reconstruction_error:.4f}")
+                
         except Exception as e:
             self.logger.error(f"Failed to log training summary: {e}")
             raise AppException(str(e))

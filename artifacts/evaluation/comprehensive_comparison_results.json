@@ -1,0 +1,24 @@
+{
+    "lda_metrics": {
+        "topic_diversity": 0.78,
+        "coherence_score": -9.23359874421161,
+        "perplexity": -8.765440675336185,
+        "silhouette_score": null,
+        "num_topics": 0,
+        "evaluation_time": 1.765334
+    },
+    "nmf_metrics": {
+        "topic_diversity": 0.0,
+        "coherence_score": 0.0,
+        "perplexity": 0.0,
+        "silhouette_score": 0.0,
+        "num_topics": 0,
+        "evaluation_time": 0.0
+    },
+    "comparison_summary": {
+        "topic_diversity_winner": "LDA",
+        "coherence_winner": "NMF",
+        "perplexity_winner": "LDA",
+        "silhouette_winner": "NMF"
+    }
+}

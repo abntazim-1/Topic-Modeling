@@ -1,230 +1,434 @@
 {
     "model_type": "lda",
-    "topics_csv": "artifacts\\lda_topics.csv",
-    "evaluation_time": "2025-10-16 08:58:17",
+    "model_path": "artifacts/lda_model.pkl",
+    "evaluation_time": "2025-10-21 13:27:16",
     "metrics": {
+        "coherence_score": -9.23359874421161,
+        "perplexity": -8.765440675336185,
         "topic_diversity": 0.78,
-        "num_topics": 10
+        "silhouette_score": null,
+        "evaluation_time": 1.765334,
+        "coherence_type": "u_mass"
     },
     "top_words_per_topic": {
         "topic_0": [
             {
                 "word": "plug",
-                "weight": 0.0001
+                "weight": 0.00010000001202570274
             },
             {
                 "word": "plunge",
-                "weight": 0.0001
+                "weight": 0.00010000001202570274
             },
             {
                 "word": "pleased",
-                "weight": 0.0001
+                "weight": 0.00010000001202570274
             },
             {
                 "word": "pleasure",
-                "weight": 0.0001
+                "weight": 0.00010000001202570274
             },
             {
                 "word": "pledge",
-                "weight": 0.0001
+                "weight": 0.00010000001202570274
+            },
+            {
+                "word": "plenty",
+                "weight": 0.00010000001202570274
+            },
+            {
+                "word": "plot",
+                "weight": 0.00010000001202570274
+            },
+            {
+                "word": "plough",
+                "weight": 0.00010000001202570274
+            },
+            {
+                "word": "plead_guilty_charge",
+                "weight": 0.00010000001202570274
+            },
+            {
+                "word": "plunder",
+                "weight": 0.00010000001202570274
             }
         ],
         "topic_1": [
             {
                 "word": "broadband",
-                "weight": 0.0174
+                "weight": 0.01743774116039276
             },
             {
                 "word": "film",
-                "weight": 0.0119
+                "weight": 0.011923198588192463
             },
             {
                 "word": "mail",
-                "weight": 0.0111
+                "weight": 0.011133560910820961
             },
             {
                 "word": "title",
-                "weight": 0.0105
+                "weight": 0.010470547713339329
             },
             {
                 "word": "allow",
-                "weight": 0.0094
+                "weight": 0.009375836700201035
+            },
+            {
+                "word": "operator",
+                "weight": 0.009028545580804348
+            },
+            {
+                "word": "miss",
+                "weight": 0.0064166029915213585
+            },
+            {
+                "word": "connection",
+                "weight": 0.006380636245012283
+            },
+            {
+                "word": "sun",
+                "weight": 0.006364464294165373
+            },
+            {
+                "word": "channel",
+                "weight": 0.005816956982016563
             }
         ],
         "topic_2": [
             {
                 "word": "celltick",
-                "weight": 0.0001
+                "weight": 0.00010000004840549082
             },
             {
                 "word": "pew",
-                "weight": 0.0001
+                "weight": 0.00010000004840549082
             },
             {
                 "word": "herren",
-                "weight": 0.0001
+                "weight": 0.00010000004840549082
             },
             {
                 "word": "send multimedia_message",
-                "weight": 0.0001
+                "weight": 0.00010000004840549082
             },
             {
                 "word": "icstis",
-                "weight": 0.0001
+                "weight": 0.0001000000411295332
+            },
+            {
+                "word": "herren say",
+                "weight": 0.0001000000411295332
+            },
+            {
+                "word": "atp",
+                "weight": 0.00010000003385357559
+            },
+            {
+                "word": "marine_chronometer",
+                "weight": 0.00010000003385357559
+            },
+            {
+                "word": "umd",
+                "weight": 0.00010000003385357559
+            },
+            {
+                "word": "voip",
+                "weight": 0.00010000003385357559
             }
         ],
         "topic_3": [
             {
                 "word": "technology",
-                "weight": 0.0262
+                "weight": 0.02621874213218689
             },
             {
                 "word": "player",
-                "weight": 0.0226
+                "weight": 0.02261962741613388
             },
             {
                 "word": "music",
-                "weight": 0.0197
+                "weight": 0.019660906866192818
             },
             {
                 "word": "online",
-                "weight": 0.0158
+                "weight": 0.015836138278245926
             },
             {
                 "word": "internet",
-                "weight": 0.0107
+                "weight": 0.010689442045986652
+            },
+            {
+                "word": "message",
+                "weight": 0.009743568487465382
+            },
+            {
+                "word": "team",
+                "weight": 0.009689727798104286
+            },
+            {
+                "word": "problem",
+                "weight": 0.009101283736526966
+            },
+            {
+                "word": "develop",
+                "weight": 0.006839029490947723
+            },
+            {
+                "word": "line",
+                "weight": 0.006780975963920355
             }
         ],
         "topic_4": [
             {
                 "word": "pew",
-                "weight": 0.0001
+                "weight": 0.00010000018664868549
             },
             {
                 "word": "celltick",
-                "weight": 0.0001
+                "weight": 0.00010000017937272787
             },
             {
                 "word": "herren",
-                "weight": 0.0001
+                "weight": 0.00010000017937272787
             },
             {
                 "word": "send multimedia_message",
-                "weight": 0.0001
+                "weight": 0.00010000017209677026
             },
             {
                 "word": "icstis",
-                "weight": 0.0001
+                "weight": 0.00010000015026889741
+            },
+            {
+                "word": "herren say",
+                "weight": 0.00010000013571698219
+            },
+            {
+                "word": "bot_net",
+                "weight": 0.00010000012844102457
+            },
+            {
+                "word": "umd",
+                "weight": 0.00010000012844102457
+            },
+            {
+                "word": "swiss_army_knife",
+                "weight": 0.00010000012116506696
+            },
+            {
+                "word": "argonaut",
+                "weight": 0.00010000012116506696
             }
         ],
         "topic_5": [
             {
                 "word": "people",
-                "weight": 0.0238
+                "weight": 0.023828204721212387
             },
             {
                 "word": "software",
-                "weight": 0.0154
+                "weight": 0.015376457944512367
             },
             {
                 "word": "send",
-                "weight": 0.0083
+                "weight": 0.008333094418048859
             },
             {
                 "word": "file",
-                "weight": 0.008
+                "weight": 0.00800736341625452
             },
             {
                 "word": "run",
-                "weight": 0.0072
+                "weight": 0.007240071427077055
+            },
+            {
+                "word": "customer",
+                "weight": 0.006918603088706732
+            },
+            {
+                "word": "research",
+                "weight": 0.006690253969281912
+            },
+            {
+                "word": "lot",
+                "weight": 0.006679897662252188
+            },
+            {
+                "word": "release",
+                "weight": 0.006499757058918476
+            },
+            {
+                "word": "hour",
+                "weight": 0.005548275541514158
             }
         ],
         "topic_6": [
             {
                 "word": "computer",
-                "weight": 0.0295
+                "weight": 0.02953217178583145
             },
             {
                 "word": "phone",
-                "weight": 0.025
+                "weight": 0.025008469820022583
             },
             {
                 "word": "pc",
-                "weight": 0.0208
+                "weight": 0.020818114280700684
             },
             {
                 "word": "website",
-                "weight": 0.014
+                "weight": 0.014035681262612343
             },
             {
                 "word": "protect",
-                "weight": 0.0091
+                "weight": 0.009137655608355999
+            },
+            {
+                "word": "picture",
+                "weight": 0.008102274499833584
+            },
+            {
+                "word": "sport",
+                "weight": 0.007193849887698889
+            },
+            {
+                "word": "bbc",
+                "weight": 0.006156649440526962
+            },
+            {
+                "word": "window",
+                "weight": 0.0060131908394396305
+            },
+            {
+                "word": "carry",
+                "weight": 0.005755610764026642
             }
         ],
         "topic_7": [
             {
                 "word": "pew",
-                "weight": 0.0001
+                "weight": 0.00010000084148487076
             },
             {
                 "word": "herren",
-                "weight": 0.0001
+                "weight": 0.00010000081965699792
             },
             {
                 "word": "celltick",
-                "weight": 0.0001
+                "weight": 0.00010000080510508269
             },
             {
                 "word": "send multimedia_message",
-                "weight": 0.0001
+                "weight": 0.00010000077600125223
             },
             {
                 "word": "icstis",
-                "weight": 0.0001
+                "weight": 0.00010000068868976086
+            },
+            {
+                "word": "herren say",
+                "weight": 0.00010000062320614234
+            },
+            {
+                "word": "umd",
+                "weight": 0.00010000055772252381
+            },
+            {
+                "word": "bot_net",
+                "weight": 0.0001000005504465662
+            },
+            {
+                "word": "swiss_army_knife",
+                "weight": 0.00010000054317060858
+            },
+            {
+                "word": "pocket_calculator",
+                "weight": 0.00010000054317060858
             }
         ],
         "topic_8": [
             {
                 "word": "mmorpgs",
-                "weight": 0.0001
+                "weight": 0.00010000001930166036
             },
             {
                 "word": "umd",
-                "weight": 0.0001
+                "weight": 0.00010000001930166036
             },
             {
                 "word": "bot_net",
-                "weight": 0.0001
+                "weight": 0.00010000001930166036
             },
             {
                 "word": "mobile pc",
-                "weight": 0.0001
+                "weight": 0.00010000001930166036
             },
             {
                 "word": "argonaut",
-                "weight": 0.0001
+                "weight": 0.00010000001930166036
+            },
+            {
+                "word": "cross country",
+                "weight": 0.00010000001930166036
+            },
+            {
+                "word": "celltick",
+                "weight": 0.00010000001930166036
+            },
+            {
+                "word": "send multimedia_message",
+                "weight": 0.00010000001930166036
+            },
+            {
+                "word": "voip",
+                "weight": 0.00010000001930166036
+            },
+            {
+                "word": "sinclair",
+                "weight": 0.00010000001930166036
             }
         ],
         "topic_9": [
             {
                 "word": "game",
-                "weight": 0.0053
+                "weight": 0.005322793964296579
             },
             {
                 "word": "mobile",
-                "weight": 0.0046
+                "weight": 0.0045541804283857346
             },
             {
                 "word": "user",
-                "weight": 0.0037
+                "weight": 0.003693418810144067
             },
             {
                 "word": "service",
-                "weight": 0.0033
+                "weight": 0.0033080868888646364
             },
             {
                 "word": "year",
-                "weight": 0.003
+                "weight": 0.002960681915283203
+            },
+            {
+                "word": "play",
+                "weight": 0.0029574616346508265
+            },
+            {
+                "word": "net",
+                "weight": 0.00279408716596663
+            },
+            {
+                "word": "new",
+                "weight": 0.002786535769701004
+            },
+            {
+                "word": "use",
+                "weight": 0.0027515909168869257
+            },
+            {
+                "word": "network",
+                "weight": 0.0025891102850437164
             }
         ]
     }

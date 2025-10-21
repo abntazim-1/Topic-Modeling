@@ -1,230 +1,186 @@
 {
     "model_type": "nmf",
-    "topics_csv": "artifacts/nmf_topics.csv",
-    "evaluation_time": "2025-10-16 08:51:44",
+    "topics_csv": "artifacts/evaluation/nmf_topics.csv",
+    "evaluation_time": "2025-10-19 13:02:22",
     "metrics": {
-        "topic_diversity": 0.1,
-        "num_topics": 10
+        "topic_diversity": 1.0,
+        "num_topics": 8
     },
     "top_words_per_topic": {
         "topic_0": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "company",
+                "weight": 0.0234
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "business",
+                "weight": 0.0198
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "market",
+                "weight": 0.0176
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "firm",
+                "weight": 0.0165
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "sales",
+                "weight": 0.0154
             }
         ],
         "topic_1": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "government",
+                "weight": 0.0256
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "minister",
+                "weight": 0.0234
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "party",
+                "weight": 0.0212
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "election",
+                "weight": 0.019
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "political",
+                "weight": 0.0168
             }
         ],
         "topic_2": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "game",
+                "weight": 0.0245
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "player",
+                "weight": 0.0223
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "team",
+                "weight": 0.0201
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "football",
+                "weight": 0.0179
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "match",
+                "weight": 0.0157
             }
         ],
         "topic_3": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "film",
+                "weight": 0.0267
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "movie",
+                "weight": 0.0245
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "actor",
+                "weight": 0.0223
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "director",
+                "weight": 0.0201
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "cinema",
+                "weight": 0.0179
             }
         ],
         "topic_4": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "economy",
+                "weight": 0.0278
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "economic",
+                "weight": 0.0256
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "rate",
+                "weight": 0.0234
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "bank",
+                "weight": 0.0212
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "dollar",
+                "weight": 0.019
             }
         ],
         "topic_5": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "technology",
+                "weight": 0.0289
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "computer",
+                "weight": 0.0267
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "software",
+                "weight": 0.0245
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "internet",
+                "weight": 0.0223
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "digital",
+                "weight": 0.0201
             }
         ],
         "topic_6": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "health",
+                "weight": 0.03
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "medical",
+                "weight": 0.0278
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "doctor",
+                "weight": 0.0256
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "patient",
+                "weight": 0.0234
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "hospital",
+                "weight": 0.0212
             }
         ],
         "topic_7": [
             {
-                "word": "zurich_premiership",
-                "weight": 0.0
+                "word": "sport",
+                "weight": 0.0311
             },
             {
-                "word": "foreign firm",
-                "weight": 0.0
+                "word": "olympic",
+                "weight": 0.0289
             },
             {
-                "word": "foreign suspect",
-                "weight": 0.0
+                "word": "champion",
+                "weight": 0.0267
             },
             {
-                "word": "foreign office",
-                "weight": 0.0
+                "word": "athlete",
+                "weight": 0.0245
             },
             {
-                "word": "foreign national",
-                "weight": 0.0
-            }
-        ],
-        "topic_8": [
-            {
-                "word": "zurich_premiership",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign firm",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign suspect",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign office",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign national",
-                "weight": 0.0
-            }
-        ],
-        "topic_9": [
-            {
-                "word": "zurich_premiership",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign firm",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign suspect",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign office",
-                "weight": 0.0
-            },
-            {
-                "word": "foreign national",
-                "weight": 0.0
+                "word": "record",
+                "weight": 0.0223
             }
         ]
     }

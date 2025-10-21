@@ -1,205 +1,239 @@
+"""
+LDA Model Definition
+Clean model structure for Latent Dirichlet Allocation topic modeling.
+"""
+
+import os
+import sys
 import logging
 from typing import Any, List, Optional, Dict, Tuple, Union
 from gensim.models import LdaModel, CoherenceModel
 from gensim.corpora import Dictionary
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+
 from src.utils.logger import get_logger
 from src.utils.exceptions import DataValidationError, AppException
 
-class LDAModeler:
+
+class LDA:
     """
-    LDA Topic Modeling wrapper using gensim.models.LdaModel. Provides training,
-    evaluation, topic extraction, and persistence utilities with robust logging.
+    LDA Topic Modeling model definition using gensim.models.LdaModel.
+    Provides model structure, hyperparameters, and basic operations.
     """
+    
     def __init__(
         self,
         num_topics: int = 10,
-        passes: int = 10,
-        chunksize: int = 100,
+        passes: int = 20,
+        chunksize: int = 2000,
         alpha: str = 'auto',
+        eta: Union[str, float] = 'auto',
+        iterations: int = 800,
+        update_every: int = 1,
+        eval_every: Optional[int] = None,
+        decay: float = 0.5,
+        offset: float = 10.0,
+        minimum_probability: float = 0.0,
+        minimum_phi_value: float = 1e-8,
         random_state: int = 42
     ) -> None:
         """
-        Initializes the LDA Modeler.
+        Initialize LDA model with hyperparameters.
+        
         Args:
             num_topics: Number of topics for LDA.
             passes: Number of passes over corpus during training.
             chunksize: Number of documents to use in each training chunk.
             alpha: Document-topic density prior.
+            eta: Topic-word density prior.
+            iterations: Maximum number of iterations.
+            update_every: Update model every N iterations.
+            eval_every: Evaluate perplexity every N iterations.
+            decay: Decay factor for learning rate.
+            offset: Offset for learning rate.
+            minimum_probability: Minimum probability threshold.
+            minimum_phi_value: Minimum phi value threshold.
             random_state: Random state for reproducibility.
         """
         self.num_topics = num_topics
         self.passes = passes
         self.chunksize = chunksize
         self.alpha = alpha
+        self.eta = eta
+        self.iterations = iterations
+        self.update_every = update_every
+        self.eval_every = eval_every
+        self.decay = decay
+        self.offset = offset
+        self.minimum_probability = minimum_probability
+        self.minimum_phi_value = minimum_phi_value
         self.random_state = random_state
+        
         self.model: Optional[LdaModel] = None
         self.logger = get_logger(__name__)
-        self.logger.info(f"LDAModeler initialized with num_topics={num_topics}, passes={passes}, chunksize={chunksize}, alpha={alpha}.")
+        
+        self.logger.info(
+            f"LDA model initialized with num_topics={num_topics}, passes={passes}, "
+            f"chunksize={chunksize}, alpha={alpha}, eta={eta}"
+        )
 
-    def train(self, corpus: List[List[tuple]], id2word: Dictionary) -> None:
+    def get_model_params(self) -> Dict[str, Any]:
+        """Get model hyperparameters as dictionary."""
+        return {
+            'num_topics': self.num_topics,
+            'passes': self.passes,
+            'chunksize': self.chunksize,
+            'alpha': self.alpha,
+            'eta': self.eta,
+            'iterations': self.iterations,
+            'update_every': self.update_every,
+            'eval_every': self.eval_every,
+            'decay': self.decay,
+            'offset': self.offset,
+            'minimum_probability': self.minimum_probability,
+            'minimum_phi_value': self.minimum_phi_value,
+            'random_state': self.random_state
+        }
+
+    def create_model(self, corpus=None, id2word=None):
         """
-        Fits the LDA model to the provided corpus.
+        Create gensim LdaModel instance with configured parameters.
+        
         Args:
-            corpus: Gensim corpus (list of bag-of-words).
-            id2word: Gensim dictionary object.
-        Raises:
-            DataValidationError: On invalid corpus/dictionary.
+            corpus: Gensim corpus for training.
+            id2word: Gensim dictionary for training.
+        
+        Returns:
+            Configured LdaModel instance.
         """
-        try:
-            if not corpus or not isinstance(corpus, list):
-                raise DataValidationError("Invalid or empty corpus provided.")
-            if not isinstance(id2word, Dictionary):
-                raise DataValidationError("id2word must be a gensim Dictionary object.")
-            self.logger.info("Starting LDA model training...")
-            self.model = LdaModel(
-                corpus=corpus,
-                id2word=id2word,
-                num_topics=self.num_topics,
-                passes=self.passes,
-                chunksize=self.chunksize,
-                alpha=self.alpha,
-                random_state=self.random_state
-            )
-            self.logger.info(f"LDA model training complete. Number of topics: {self.model.num_topics}")
-        except Exception as e:
-            self.logger.error(f"Error during LDA model training: {e}")
-            raise AppException(str(e))
+        return LdaModel(
+            corpus=corpus,
+            id2word=id2word,
+            num_topics=self.num_topics,
+            passes=self.passes,
+            chunksize=self.chunksize,
+            alpha=self.alpha,
+            eta=self.eta,
+            iterations=self.iterations,
+            update_every=self.update_every,
+            eval_every=self.eval_every,
+            decay=self.decay,
+            offset=self.offset,
+            minimum_probability=self.minimum_probability,
+            minimum_phi_value=self.minimum_phi_value,
+            random_state=self.random_state
+        )
+
+    def set_model(self, model: LdaModel) -> None:
+        """Set the trained model."""
+        self.model = model
+        self.logger.info("LDA model set successfully")
+
+    def get_model(self) -> Optional[LdaModel]:
+        """Get the current model."""
+        return self.model
+
+    def is_trained(self) -> bool:
+        """Check if model is trained."""
+        return self.model is not None
 
     def get_topics(self, num_words: int = 10) -> List[Dict[str, Union[int, List[Tuple[str, float]]]]]:
         """
-        Returns the top words for each topic.
+        Get top words for each topic.
+        
         Args:
             num_words: Number of top words per topic.
+            
         Returns:
-            List of topics, each as dict of topic_id and (word, weight) tuples.
+            List of topics with words and weights.
+            
         Raises:
             AppException: If model is not trained.
         """
-        try:
-            if self.model is None:
-                raise AppException("LDA model is not trained yet.")
-            topics = []
-            for idx, topic in self.model.show_topics(num_topics=self.num_topics, num_words=num_words, formatted=False):
-                topics.append({
-                    "topic_id": idx,
-                    "words": [(word, round(weight, 4)) for word, weight in topic]
-                })
-            self.logger.info(f"Extracted top {num_words} words for each topic.")
-            return topics
-        except Exception as e:
-            self.logger.error(f"Failed to get topic words: {e}")
-            raise AppException(str(e))
-
-    def compute_coherence_score(self, texts: List[List[str]], id2word: Dictionary, coherence: str = 'c_v') -> float:
-        """
-        Compute the coherence score for trained topics.
-        Args:
-            texts: Tokenized texts for coherence computation.
-            id2word: Gensim dictionary object.
-            coherence: Coherence type (default: 'c_v').
-        Returns:
-            Coherence score (float).
-        Raises:
-            AppException: On error or if model not trained.
-        """
-        try:
-            if self.model is None:
-                raise AppException("LDA model is not trained.")
-            coherence_model = CoherenceModel(
-                model=self.model,
-                texts=texts,
-                dictionary=id2word,
-                coherence=coherence
-            )
-            score = coherence_model.get_coherence()
-            self.logger.info(f"Coherence ({coherence}) score: {score:.4f}")
-            return score
-        except Exception as e:
-            self.logger.error(f"Failed to compute coherence score: {e}")
-            raise AppException(str(e))
-
-    def compute_perplexity(self, corpus: List[List[tuple]]) -> float:
-        """
-        Compute model perplexity on the given corpus.
-        Args:
-            corpus: Corpus to compute perplexity against.
-        Returns:
-            Perplexity value (float).
-        Raises:
-            AppException: On error or if model not trained.
-        """
-        try:
-            if self.model is None:
-                raise AppException("LDA model is not trained.")
-            perplexity = self.model.log_perplexity(corpus)
-            self.logger.info(f"Model log perplexity: {perplexity:.4f}")
-            return perplexity
-        except Exception as e:
-            self.logger.error(f"Failed to compute perplexity: {e}")
-            raise AppException(str(e))
+        if not self.is_trained():
+            raise AppException("LDA model is not trained yet.")
+        
+        topics = []
+        for idx, topic in self.model.show_topics(
+            num_topics=self.num_topics, 
+            num_words=num_words, 
+            formatted=False
+        ):
+            topics.append({
+                "topic_id": idx,
+                "words": [(word, round(weight, 4)) for word, weight in topic]
+            })
+        
+        return topics
 
     def get_dominant_topic_per_doc(self, corpus: List[List[tuple]]) -> List[int]:
         """
-        Returns the most likely topic for each document in the corpus.
+        Get dominant topic for each document.
+        
         Args:
-            corpus: Corpus in BOW format.
+            corpus: Gensim corpus (list of bag-of-words).
+            
         Returns:
             List of dominant topic indices per document.
-        Raises:
-            AppException: On error or if model not trained.
         """
-        try:
-            if self.model is None:
-                raise AppException("LDA model is not trained.")
-            dominant_topics = []
-            for doc_bow in corpus:
-                topic_probs = self.model.get_document_topics(doc_bow)
-                if topic_probs:
-                    dominant_topic = max(topic_probs, key=lambda tup: tup[1])[0]
-                else:
-                    dominant_topic = -1
-                dominant_topics.append(dominant_topic)
-            self.logger.info("Extracted dominant topic for each document.")
-            return dominant_topics
-        except Exception as e:
-            self.logger.error(f"Failed to extract dominant topics: {e}")
-            raise AppException(str(e))
+        if not self.is_trained():
+            raise AppException("LDA model is not trained yet.")
+        
+        dominant_topics = []
+        for doc_bow in corpus:
+            topic_probs = self.model.get_document_topics(doc_bow)
+            if topic_probs:
+                dominant_topic = max(topic_probs, key=lambda tup: tup[1])[0]
+            else:
+                dominant_topic = -1
+            dominant_topics.append(dominant_topic)
+        
+        return dominant_topics
+
+    def compute_perplexity(self, corpus: List[List[tuple]]) -> float:
+        """
+        Compute model perplexity.
+        
+        Args:
+            corpus: Corpus to compute perplexity against.
+            
+        Returns:
+            Perplexity value.
+        """
+        if not self.is_trained():
+            raise AppException("LDA model is not trained yet.")
+        
+        return self.model.log_perplexity(corpus)
 
     def save_model(self, path: str) -> None:
         """
-        Saves the trained model to a file.
+        Save the trained model.
+        
         Args:
             path: Path to save model.
-        Raises:
-            AppException: On error or if model not trained.
         """
-        try:
-            if self.model is None:
-                raise AppException("LDA model is not trained and cannot be saved.")
-            self.model.save(path)
-            self.logger.info(f"LDA model saved to: {path}")
-        except Exception as e:
-            self.logger.error(f"Failed to save LDA model: {e}")
-            raise AppException(str(e))
+        if not self.is_trained():
+            raise AppException("LDA model is not trained and cannot be saved.")
+        
+        self.model.save(path)
+        self.logger.info(f"LDA model saved to: {path}")
 
     def load_model(self, path: str) -> None:
         """
-        Loads a model from the given path.
+        Load a model from path.
+        
         Args:
             path: Path to load model from.
-        Raises:
-            AppException: On error loading the model.
         """
-        try:
-            self.model = LdaModel.load(path)
-            self.logger.info(f"LDA model loaded from: {path}")
-        except Exception as e:
-            self.logger.error(f"Failed to load LDA model: {e}")
-            raise AppException(str(e))
+        self.model = LdaModel.load(path)
+        self.logger.info(f"LDA model loaded from: {path}")
+
 
 if __name__ == "__main__":
-    # Example: initialize and save LDA config (without training)
-    lda = LDAModeler(num_topics=10, passes=10, chunksize=100)
-    # You could print something, or implement custom CLI logic here
-    print("LDA modeler initialized with config. Not trained.")
-    # lda.save_model("lda_untrained.model")  # THIS will fail unless the model is trained!
+    # Example usage
+    lda = LDA(num_topics=10, passes=20)
+    print(f"LDA model initialized with {lda.num_topics} topics")
+    print(f"Model parameters: {lda.get_model_params()}")

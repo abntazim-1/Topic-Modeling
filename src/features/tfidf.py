@@ -104,8 +104,8 @@ class TFIDFVectorizerWrapper:
             texts: List of cleaned strings, or List of token lists.
         Returns:
             Tuple containing:
-                - corpus: Sparse TF-IDF matrix
-                - id2word: Dictionary mapping word IDs to words
+                - matrix: Sparse TF-IDF matrix
+                - feature_names: List of feature names (for NMF compatibility)
         Raises:
             AppException: If input invalid.
         """
@@ -115,11 +115,11 @@ class TFIDFVectorizerWrapper:
         matrix = self.vectorizer.fit_transform(texts)
         self.fitted = True
         
-        # Create id2word dictionary from vocabulary
-        id2word = {id: word for word, id in self.vectorizer.vocabulary_.items()}
+        # Get feature names for NMF compatibility
+        feature_names = self.vectorizer.get_feature_names_out().tolist()
         
         self.logger.info(f"TF-IDF vectorizer fit and transformed {len(texts)} documents. Shape: {matrix.shape}.")
-        return matrix, id2word
+        return matrix, feature_names
 
     def get_feature_names(self) -> List[str]:
         """
