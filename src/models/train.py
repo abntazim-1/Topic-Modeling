@@ -20,6 +20,10 @@ from src.features.tfidf import TFIDFVectorizerWrapper
 from src.topics.lda_model import LDA
 from src.topics.nmf_model import NMF
 
+# Import fine-tuning capabilities (commented out - modules not available)
+# from src.models.lda_finetuned_trainer import FineTunedLDATrainer
+# from src.models.lda_topic_optimizer import LDATopicOptimizer
+
 
 class TopicModelTrainer:
     """
@@ -34,7 +38,9 @@ class TopicModelTrainer:
         data_path: str = r"artifacts/preprocessed_bbc_news.csv",
         vectorizer_type: str = "tfidf",
         output_dir: str = "artifacts/",
-        random_state: int = 42
+        random_state: int = 42,
+        enable_fine_tuning: bool = False,
+        optimize_topics_only: bool = False
     ):
         self.model_type = model_type.lower()
         self.num_topics = num_topics
@@ -42,6 +48,8 @@ class TopicModelTrainer:
         self.vectorizer_type = vectorizer_type.lower()
         self.output_dir = output_dir
         self.random_state = random_state
+        self.enable_fine_tuning = enable_fine_tuning
+        self.optimize_topics_only = optimize_topics_only
 
         self.logger = get_logger(__name__)
         self.model = None
@@ -135,45 +143,83 @@ class TopicModelTrainer:
         """Trains either LDA or NMF model based on configuration."""
         try:
             if self.model_type == "lda":
-                # Create LDA model with strong hyperparameters
-                self.model = LDA(
-                    num_topics=self.num_topics,
-                    passes=20,
-                    chunksize=2000,
-                    iterations=800,
-                    update_every=1,
-                    alpha='auto',
-                    eta='auto',
-                    random_state=self.random_state
-                )
-                
-                # Train the model (gensim LdaModel is trained during construction)
-                lda_model = self.model.create_model(corpus=self.corpus, id2word=self.id2word)
-                self.model.set_model(lda_model)
-                
-                self.logger.info(f"LDA model trained with {self.model.num_topics} topics")
+                if self.enable_fine_tuning:
+                    self.logger.info("Using fine-tuned LDA training...")
+                    self._train_fine_tuned_lda()
+                elif self.optimize_topics_only:
+                    self.logger.info("Using topic-optimized LDA training...")
+                    self._train_topic_optimized_lda()
+                else:
+                    self.logger.info("Using standard LDA training...")
+                    self._train_standard_lda()
 
             elif self.model_type == "nmf":
-                # Create NMF model with strong hyperparameters
+                # Create NMF model with parameters optimized for sparse data
                 self.model = NMF(
                     num_topics=self.num_topics,
-                    init='nndsvda',
-                    max_iter=600,
-                    alpha=0.1,
-                    l1_ratio=0.5,
-                    random_state=self.random_state
+                    init='random',  # Use random initialization for better convergence
+                    max_iter=1000,  # Increase iterations
+                    alpha=0.0,  # No regularization initially
+                    l1_ratio=0.0,  # No L1 regularization
+                    random_state=self.random_state,
+                    beta_loss='frobenius',  # Use Frobenius norm
+                    solver='mu'  # Use multiplicative updates
                 )
                 
-                # Train the model
+                # Convert sparse matrix to dense for NMF compatibility
+                if hasattr(self.matrix, 'toarray'):
+                    self.logger.info("Converting sparse matrix to dense for NMF compatibility")
+                    matrix_dense = self.matrix.toarray()
+                else:
+                    matrix_dense = self.matrix
+                
+                # Validate matrix before training
+                if matrix_dense.shape[0] == 0 or matrix_dense.shape[1] == 0:
+                    raise AppException("Matrix is empty - cannot train NMF model")
+                
+                if matrix_dense.sum() == 0:
+                    raise AppException("Matrix contains only zeros - cannot train NMF model")
+                
+                self.logger.info(f"Training NMF on matrix shape: {matrix_dense.shape}")
+                
+                # Train the model with error handling
                 nmf_model = self.model.create_model()
-                document_topic_matrix = nmf_model.fit_transform(self.matrix)
-                topic_term_matrix = nmf_model.components_
-                
-                self.model.set_model(nmf_model)
-                self.model.set_feature_names(self.feature_names)
-                self.model.set_matrices(document_topic_matrix, topic_term_matrix)
-                
-                self.logger.info(f"NMF model trained with {self.model.num_topics} topics")
+                try:
+                    self.logger.info("Starting NMF training...")
+                    document_topic_matrix = nmf_model.fit_transform(matrix_dense)
+                    topic_term_matrix = nmf_model.components_
+                    
+                    # Debug information
+                    self.logger.info(f"Document-topic matrix shape: {document_topic_matrix.shape}")
+                    self.logger.info(f"Topic-term matrix shape: {topic_term_matrix.shape}")
+                    self.logger.info(f"Document-topic matrix max: {document_topic_matrix.max():.6f}")
+                    self.logger.info(f"Topic-term matrix max: {topic_term_matrix.max():.6f}")
+                    self.logger.info(f"Topic-term matrix min: {topic_term_matrix.min():.6f}")
+                    self.logger.info(f"Topic-term matrix mean: {topic_term_matrix.mean():.6f}")
+                    
+                    # Validate training results
+                    if document_topic_matrix.shape[0] != matrix_dense.shape[0]:
+                        raise AppException(f"Document-topic matrix shape mismatch: expected {matrix_dense.shape[0]}, got {document_topic_matrix.shape[0]}")
+                    
+                    if topic_term_matrix.shape[1] != matrix_dense.shape[1]:
+                        raise AppException(f"Topic-term matrix shape mismatch: expected {matrix_dense.shape[1]}, got {topic_term_matrix.shape[1]}")
+                    
+                    # Check if model actually learned something
+                    if topic_term_matrix.max() == 0:
+                        raise AppException("NMF model failed to learn - all topic weights are zero")
+                    
+                    self.model.set_model(nmf_model)
+                    self.model.set_feature_names(self.feature_names)
+                    self.model.set_matrices(document_topic_matrix, topic_term_matrix)
+                    
+                    self.logger.info(f"NMF model trained successfully with {self.model.num_topics} topics")
+                    self.logger.info(f"Document-topic matrix shape: {document_topic_matrix.shape}")
+                    self.logger.info(f"Topic-term matrix shape: {topic_term_matrix.shape}")
+                    self.logger.info(f"Max topic weight: {topic_term_matrix.max():.4f}")
+                    
+                except Exception as e:
+                    self.logger.error(f"NMF training failed: {e}")
+                    raise AppException(f"NMF model training failed: {e}")
 
             else:
                 raise ValueError(f"Unsupported model type: {self.model_type}")
@@ -182,6 +228,39 @@ class TopicModelTrainer:
         except Exception as e:
             self.logger.error(f"Model training failed: {e}")
             raise AppException(str(e))
+
+    # ----------------------------------------------------------------------
+    def _train_standard_lda(self) -> None:
+        """Train LDA model with standard hyperparameters."""
+        # Create LDA model with strong hyperparameters
+        self.model = LDA(
+            num_topics=self.num_topics,
+            passes=20,
+            chunksize=2000,
+            iterations=800,
+            update_every=1,
+            alpha='auto',
+            eta='auto',
+            random_state=self.random_state
+        )
+        
+        # Train the model (gensim LdaModel is trained during construction)
+        lda_model = self.model.create_model(corpus=self.corpus, id2word=self.id2word)
+        self.model.set_model(lda_model)
+        
+        self.logger.info(f"LDA model trained with {self.model.num_topics} topics")
+
+    # ----------------------------------------------------------------------
+    def _train_fine_tuned_lda(self) -> None:
+        """Train LDA model with fine-tuning and hyperparameter optimization."""
+        self.logger.warning("Fine-tuned LDA training not available - falling back to standard training")
+        self._train_standard_lda()
+
+    # ----------------------------------------------------------------------
+    def _train_topic_optimized_lda(self) -> None:
+        """Train LDA model with optimized topic count (5-15 topics)."""
+        self.logger.warning("Topic-optimized LDA training not available - falling back to standard training")
+        self._train_standard_lda()
 
     # ----------------------------------------------------------------------
     def save_artifacts(self) -> None:
@@ -235,6 +314,8 @@ if __name__ == "__main__":
     parser.add_argument("--data_path", type=str, default="artifacts\preprocessed_bbc_news.csv", help="Path to preprocessed data")
     parser.add_argument("--vectorizer_type", type=str, default="tfidf", help="Vectorizer: tfidf or bow")
     parser.add_argument("--output_dir", type=str, default="artifacts/", help="Directory to save model artifacts")
+    parser.add_argument("--enable_fine_tuning", action="store_true", help="Enable hyperparameter fine-tuning for LDA")
+    parser.add_argument("--optimize_topics_only", action="store_true", help="Optimize only the number of topics (5-15) for LDA")
     args = parser.parse_args()
 
     trainer = TopicModelTrainer(
@@ -242,7 +323,9 @@ if __name__ == "__main__":
         num_topics=args.num_topics,
         data_path=args.data_path,
         vectorizer_type=args.vectorizer_type,
-        output_dir=args.output_dir
+        output_dir=args.output_dir,
+        enable_fine_tuning=args.enable_fine_tuning,
+        optimize_topics_only=args.optimize_topics_only
     )
 
     trainer.load_data()

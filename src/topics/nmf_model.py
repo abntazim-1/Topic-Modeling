@@ -8,7 +8,7 @@ import sys
 import logging
 import numpy as np
 from typing import Any, List, Optional, Dict, Tuple, Union
-from sklearn.decomposition import NMF
+from sklearn.decomposition import NMF as SklearnNMF
 from scipy.sparse import issparse, csr_matrix
 
 # Add project root to Python path
@@ -61,7 +61,7 @@ class NMF:
         self.solver = solver
         self.tol = tol
         
-        self.model: Optional[NMF] = None
+        self.model: Optional[SklearnNMF] = None
         self.feature_names: Optional[List[str]] = None
         self.document_topic_matrix: Optional[np.ndarray] = None
         self.topic_term_matrix: Optional[np.ndarray] = None
@@ -87,14 +87,14 @@ class NMF:
             'tol': self.tol
         }
 
-    def create_model(self) -> NMF:
+    def create_model(self) -> SklearnNMF:
         """
         Create sklearn NMF instance with configured parameters.
         
         Returns:
             Configured NMF instance.
         """
-        return NMF(
+        return SklearnNMF(
             n_components=self.num_topics,
             init=self.init,
             max_iter=self.max_iter,
@@ -104,15 +104,15 @@ class NMF:
             beta_loss=self.beta_loss,
             solver=self.solver,
             tol=self.tol,
-            verbose=0
+            verbose=1  # Enable verbose output for debugging
         )
 
-    def set_model(self, model: NMF) -> None:
+    def set_model(self, model: SklearnNMF) -> None:
         """Set the trained model."""
         self.model = model
         self.logger.info("NMF model set successfully")
 
-    def get_model(self) -> Optional[NMF]:
+    def get_model(self) -> Optional[SklearnNMF]:
         """Get the current model."""
         return self.model
 
@@ -151,14 +151,26 @@ class NMF:
         if self.topic_term_matrix is None:
             raise AppException("Topic-term matrix not available.")
         
+        # Validate matrix dimensions
+        if len(self.feature_names) != self.topic_term_matrix.shape[1]:
+            raise AppException(f"Feature names length ({len(self.feature_names)}) doesn't match topic-term matrix width ({self.topic_term_matrix.shape[1]})")
+        
         topics = []
         for topic_idx in range(self.num_topics):
             # Get top word indices for this topic
-            top_indices = self.topic_term_matrix[topic_idx].argsort()[-num_words:][::-1]
-            top_words = [
-                (self.feature_names[i], float(self.topic_term_matrix[topic_idx][i]))
-                for i in top_indices
-            ]
+            topic_weights = self.topic_term_matrix[topic_idx]
+            
+            # Check if topic has any non-zero weights
+            if topic_weights.max() == 0:
+                self.logger.warning(f"Topic {topic_idx} has all zero weights")
+                # Still create the topic but with zero weights
+                top_words = [(self.feature_names[i], 0.0) for i in range(min(num_words, len(self.feature_names)))]
+            else:
+                top_indices = topic_weights.argsort()[-num_words:][::-1]
+                top_words = [
+                    (self.feature_names[i], float(topic_weights[i]))
+                    for i in top_indices
+                ]
             
             topics.append({
                 "topic_id": topic_idx,

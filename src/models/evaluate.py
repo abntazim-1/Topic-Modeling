@@ -4,6 +4,9 @@ Comprehensive evaluation for both LDA and NMF models including:
 - Coherence Score
 - Topic Diversity
 - Topic Intrusion Tests
+- Model Comparison
+- Batch Evaluation
+- Visualization Generation
 """
 
 import os
@@ -24,6 +27,7 @@ import gensim
 from gensim.models import CoherenceModel
 from gensim.corpora import Dictionary
 from scipy.sparse import csr_matrix
+import argparse
 
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,8 +35,8 @@ sys.path.insert(0, project_root)
 
 from src.utils.logger import get_logger, setup_logging
 from src.utils.exceptions import DataValidationError, AppException
-from src.topics.LDA_model import LDA
-from src.topics.NMF_model import NMF
+from src.topics.lda_model import LDA
+from src.topics.nmf_model import NMF
 
 
 class TopicModelEvaluator:
@@ -135,7 +139,7 @@ class TopicModelEvaluator:
                 # For NMF, prepare TF-IDF matrix
                 joined_texts = [" ".join(tokens) for tokens in self.texts]
                 self.matrix = self.vectorizer.transform(joined_texts)
-                self.feature_names = self.vectorizer.get_feature_names_out().tolist()
+                self.feature_names = self.vectorizer.get_feature_names()
             
             self.logger.info("Successfully loaded all artifacts")
             
@@ -422,14 +426,28 @@ class TopicModelEvaluator:
     def _save_evaluation_report(self) -> None:
         """Save evaluation report to JSON file."""
         try:
+            # Convert numpy types to Python types for JSON serialization
+            def convert_numpy_types(obj):
+                if isinstance(obj, np.integer):
+                    return int(obj)
+                elif isinstance(obj, np.floating):
+                    return float(obj)
+                elif isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                elif isinstance(obj, dict):
+                    return {key: convert_numpy_types(value) for key, value in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_numpy_types(item) for item in obj]
+                return obj
+            
             report = {
                 "model_type": self.model_type,
                 "model_path": self.model_path,
                 "vectorizer_path": self.vectorizer_path,
                 "data_path": self.data_path,
                 "evaluation_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "metrics": self.metrics,
-                "topics": self.model.get_topics(num_words=10)
+                "metrics": convert_numpy_types(self.metrics),
+                "topics": convert_numpy_types(self.model.get_topics(num_words=10))
             }
             
             report_path = os.path.join(self.output_dir, f"{self.model_type}_evaluation.json")
@@ -440,6 +458,374 @@ class TopicModelEvaluator:
             
         except Exception as e:
             self.logger.error(f"Error saving evaluation report: {str(e)}")
+
+
+class ModelComparison:
+    """
+    Comprehensive model comparison and visualization framework.
+    """
+    
+    def __init__(self, output_dir: str = "artifacts/evaluation"):
+        self.output_dir = output_dir
+        self.logger = get_logger(__name__)
+        os.makedirs(self.output_dir, exist_ok=True)
+    
+    def compare_models(self, model_configs: List[Dict[str, str]], data_path: str) -> Dict[str, Any]:
+        """
+        Compare multiple models and generate comprehensive comparison report.
+        
+        Args:
+            model_configs: List of model configurations with keys:
+                - model_type: 'lda' or 'nmf'
+                - model_path: Path to model file
+                - vectorizer_path: Path to vectorizer file
+                - name: Display name for the model
+            data_path: Path to preprocessed data
+            
+        Returns:
+            Dictionary containing comparison results and metrics
+        """
+        self.logger.info(f"Starting comparison of {len(model_configs)} models...")
+        
+        results = {}
+        all_metrics = []
+        
+        for config in model_configs:
+            model_name = config.get('name', config['model_type'])
+            self.logger.info(f"Evaluating {model_name}...")
+            
+            try:
+                evaluator = TopicModelEvaluator(
+                    model_path=config['model_path'],
+                    vectorizer_path=config['vectorizer_path'],
+                    data_path=data_path,
+                    model_type=config['model_type'],
+                    output_dir=self.output_dir
+                )
+                
+                metrics = evaluator.evaluate()
+                results[model_name] = metrics
+                all_metrics.append({
+                    'name': model_name,
+                    'type': config['model_type'],
+                    'metrics': metrics
+                })
+                
+            except Exception as e:
+                self.logger.error(f"Error evaluating {model_name}: {str(e)}")
+                results[model_name] = {
+                    'error': str(e),
+                    'topic_diversity': 0.0,
+                    'coherence_score': 0.0,
+                    'perplexity': 0.0,
+                    'silhouette_score': 0.0,
+                    'num_topics': 0
+                }
+        
+        # Generate comparison visualizations
+        self._create_comparison_visualizations(all_metrics)
+        
+        # Generate comparison report
+        comparison_report = self._generate_comparison_report(all_metrics)
+        
+        # Save comprehensive results
+        self._save_comparison_results(results, comparison_report)
+        
+        return {
+            'individual_results': results,
+            'comparison_report': comparison_report,
+            'visualizations': self._get_visualization_paths()
+        }
+    
+    def _create_comparison_visualizations(self, all_metrics: List[Dict]) -> None:
+        """Create comprehensive comparison visualizations."""
+        try:
+            # Set up the plotting style
+            plt.style.use('default')
+            sns.set_palette("husl")
+            
+            # Create main comparison figure
+            fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+            fig.suptitle('Comprehensive Model Comparison', fontsize=16, fontweight='bold')
+            
+            # Extract metrics for plotting
+            model_names = [m['name'] for m in all_metrics]
+            diversity_scores = [m['metrics'].get('topic_diversity', 0.0) for m in all_metrics]
+            coherence_scores = [m['metrics'].get('coherence_score', 0.0) for m in all_metrics]
+            perplexity_scores = [m['metrics'].get('perplexity', 0.0) if m['metrics'].get('perplexity') is not None else 0.0 for m in all_metrics]
+            silhouette_scores = [m['metrics'].get('silhouette_score', 0.0) if m['metrics'].get('silhouette_score') is not None else 0.0 for m in all_metrics]
+            
+            # Plot 1: Topic Diversity
+            axes[0, 0].bar(model_names, diversity_scores, color='skyblue', alpha=0.7)
+            axes[0, 0].set_title('Topic Diversity (Higher is Better)')
+            axes[0, 0].set_ylabel('Score')
+            axes[0, 0].set_ylim(0, 1)
+            axes[0, 0].tick_params(axis='x', rotation=45)
+            for i, v in enumerate(diversity_scores):
+                axes[0, 0].text(i, v + 0.02, f"{v:.4f}", ha='center', va='bottom')
+            
+            # Plot 2: Coherence Score
+            axes[0, 1].bar(model_names, coherence_scores, color='lightcoral', alpha=0.7)
+            axes[0, 1].set_title('Coherence Score (Higher is Better)')
+            axes[0, 1].set_ylabel('Score')
+            axes[0, 1].tick_params(axis='x', rotation=45)
+            for i, v in enumerate(coherence_scores):
+                axes[0, 1].text(i, v + 0.02, f"{v:.4f}", ha='center', va='bottom')
+            
+            # Plot 3: Perplexity (Lower is Better)
+            axes[1, 0].bar(model_names, perplexity_scores, color='lightgreen', alpha=0.7)
+            axes[1, 0].set_title('Perplexity (Lower is Better)')
+            axes[1, 0].set_ylabel('Perplexity')
+            axes[1, 0].tick_params(axis='x', rotation=45)
+            for i, v in enumerate(perplexity_scores):
+                axes[1, 0].text(i, v + 0.02, f"{v:.2f}", ha='center', va='bottom')
+            
+            # Plot 4: Silhouette Score
+            axes[1, 1].bar(model_names, silhouette_scores, color='gold', alpha=0.7)
+            axes[1, 1].set_title('Silhouette Score (Higher is Better)')
+            axes[1, 1].set_ylabel('Score')
+            axes[1, 1].tick_params(axis='x', rotation=45)
+            for i, v in enumerate(silhouette_scores):
+                axes[1, 1].text(i, v + 0.02, f"{v:.4f}", ha='center', va='bottom')
+            
+            plt.tight_layout()
+            
+            # Save the comparison plot
+            comparison_path = os.path.join(self.output_dir, "comprehensive_model_comparison.png")
+            plt.savefig(comparison_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            
+            # Create radar chart for multi-dimensional comparison
+            self._create_radar_chart(all_metrics)
+            
+            # Create heatmap for detailed metrics
+            self._create_metrics_heatmap(all_metrics)
+            
+            self.logger.info(f"Comparison visualizations saved to {self.output_dir}")
+            
+        except Exception as e:
+            self.logger.error(f"Error creating comparison visualizations: {str(e)}")
+    
+    def _create_radar_chart(self, all_metrics: List[Dict]) -> None:
+        """Create radar chart for multi-dimensional model comparison."""
+        try:
+            # Normalize metrics to 0-1 scale for radar chart
+            metrics_data = []
+            model_names = []
+            
+            for model in all_metrics:
+                metrics = model['metrics']
+                # Normalize perplexity (invert and scale) - handle None values
+                perplexity = metrics.get('perplexity')
+                if perplexity is not None and perplexity > 0:
+                    normalized_perplexity = max(0, 1 - (perplexity / 1000))
+                else:
+                    normalized_perplexity = 0
+                
+                # Handle silhouette score None values
+                silhouette = metrics.get('silhouette_score')
+                silhouette_score = max(0, silhouette) if silhouette is not None else 0
+                
+                metrics_data.append([
+                    metrics.get('topic_diversity', 0.0),
+                    metrics.get('coherence_score', 0.0),
+                    normalized_perplexity,
+                    silhouette_score
+                ])
+                model_names.append(model['name'])
+            
+            # Create radar chart
+            fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(projection='polar'))
+            
+            # Define metrics labels
+            metrics_labels = ['Topic Diversity', 'Coherence', 'Perplexity (inverted)', 'Silhouette']
+            
+            # Set up angles for radar chart
+            angles = np.linspace(0, 2 * np.pi, len(metrics_labels), endpoint=False).tolist()
+            angles += angles[:1]  # Complete the circle
+            
+            # Plot each model
+            colors = plt.cm.Set3(np.linspace(0, 1, len(model_names)))
+            
+            for i, (model_name, data) in enumerate(zip(model_names, metrics_data)):
+                data += data[:1]  # Complete the circle
+                ax.plot(angles, data, 'o-', linewidth=2, label=model_name, color=colors[i])
+                ax.fill(angles, data, alpha=0.25, color=colors[i])
+            
+            # Customize the chart
+            ax.set_xticks(angles[:-1])
+            ax.set_xticklabels(metrics_labels)
+            ax.set_ylim(0, 1)
+            ax.set_title('Multi-dimensional Model Comparison', size=16, fontweight='bold', pad=20)
+            ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.0))
+            ax.grid(True)
+            
+            plt.tight_layout()
+            radar_path = os.path.join(self.output_dir, "model_comparison_radar.png")
+            plt.savefig(radar_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            
+        except Exception as e:
+            self.logger.error(f"Error creating radar chart: {str(e)}")
+    
+    def _create_metrics_heatmap(self, all_metrics: List[Dict]) -> None:
+        """Create heatmap of all metrics for all models."""
+        try:
+            # Prepare data for heatmap
+            metrics_names = ['Topic Diversity', 'Coherence', 'Perplexity', 'Silhouette', 'Num Topics']
+            model_names = [m['name'] for m in all_metrics]
+            
+            # Create matrix for heatmap
+            heatmap_data = []
+            for model in all_metrics:
+                metrics = model['metrics']
+                
+                # Handle None values properly
+                perplexity = metrics.get('perplexity')
+                perplexity_val = perplexity if perplexity is not None else 0.0
+                
+                silhouette = metrics.get('silhouette_score')
+                silhouette_val = max(0, silhouette) if silhouette is not None else 0.0
+                
+                row = [
+                    metrics.get('topic_diversity', 0.0),
+                    metrics.get('coherence_score', 0.0),
+                    perplexity_val,
+                    silhouette_val,
+                    metrics.get('num_topics', 0)
+                ]
+                heatmap_data.append(row)
+            
+            # Create heatmap
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.heatmap(heatmap_data, 
+                       xticklabels=metrics_names, 
+                       yticklabels=model_names,
+                       annot=True, 
+                       fmt='.4f', 
+                       cmap='YlOrRd',
+                       ax=ax)
+            
+            ax.set_title('Model Metrics Heatmap', fontsize=14, fontweight='bold')
+            ax.set_xlabel('Metrics')
+            ax.set_ylabel('Models')
+            
+            plt.tight_layout()
+            heatmap_path = os.path.join(self.output_dir, "model_metrics_heatmap.png")
+            plt.savefig(heatmap_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            
+        except Exception as e:
+            self.logger.error(f"Error creating metrics heatmap: {str(e)}")
+    
+    def _generate_comparison_report(self, all_metrics: List[Dict]) -> Dict[str, Any]:
+        """Generate comprehensive comparison report."""
+        report = {
+            'summary': {},
+            'winners': {},
+            'detailed_analysis': {}
+        }
+        
+        # Find winners for each metric
+        metrics_to_compare = ['topic_diversity', 'coherence_score', 'silhouette_score']
+        lower_is_better = ['perplexity']
+        
+        for metric in metrics_to_compare:
+            # Filter out models with None values for this metric
+            valid_models = [m for m in all_metrics if m['metrics'].get(metric) is not None]
+            if valid_models:
+                best_model = max(valid_models, key=lambda x: x['metrics'].get(metric, 0.0))
+                report['winners'][metric] = {
+                    'model': best_model['name'],
+                    'score': best_model['metrics'].get(metric, 0.0)
+                }
+            else:
+                report['winners'][metric] = {
+                    'model': 'N/A',
+                    'score': 0.0
+                }
+        
+        for metric in lower_is_better:
+            # Filter out models with None values for this metric
+            valid_models = [m for m in all_metrics if m['metrics'].get(metric) is not None]
+            if valid_models:
+                best_model = min(valid_models, key=lambda x: x['metrics'].get(metric, float('inf')))
+                report['winners'][metric] = {
+                    'model': best_model['name'],
+                    'score': best_model['metrics'].get(metric, 0.0)
+                }
+            else:
+                report['winners'][metric] = {
+                    'model': 'N/A',
+                    'score': 0.0
+                }
+        
+        # Generate summary statistics
+        for metric in metrics_to_compare + lower_is_better:
+            scores = [m['metrics'].get(metric, 0.0) for m in all_metrics]
+            # Filter out None values for proper statistics
+            valid_scores = [s for s in scores if s is not None]
+            if valid_scores:
+                report['summary'][metric] = {
+                    'mean': np.mean(valid_scores),
+                    'std': np.std(valid_scores),
+                    'min': np.min(valid_scores),
+                    'max': np.max(valid_scores)
+                }
+            else:
+                report['summary'][metric] = {
+                    'mean': 0.0,
+                    'std': 0.0,
+                    'min': 0.0,
+                    'max': 0.0
+                }
+        
+        return report
+    
+    def _save_comparison_results(self, results: Dict, comparison_report: Dict) -> None:
+        """Save comprehensive comparison results."""
+        try:
+            # Convert numpy types to Python types for JSON serialization
+            def convert_numpy_types(obj):
+                if isinstance(obj, np.integer):
+                    return int(obj)
+                elif isinstance(obj, np.floating):
+                    return float(obj)
+                elif isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                elif isinstance(obj, dict):
+                    return {key: convert_numpy_types(value) for key, value in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_numpy_types(item) for item in obj]
+                return obj
+            
+            comparison_data = {
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'individual_results': convert_numpy_types(results),
+                'comparison_report': convert_numpy_types(comparison_report),
+                'summary': {
+                    'total_models': len(results),
+                    'successful_evaluations': len([r for r in results.values() if 'error' not in r]),
+                    'failed_evaluations': len([r for r in results.values() if 'error' in r])
+                }
+            }
+            
+            results_path = os.path.join(self.output_dir, "comprehensive_comparison_results.json")
+            with open(results_path, 'w') as f:
+                json.dump(comparison_data, f, indent=4)
+            
+            self.logger.info(f"Comparison results saved to {results_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving comparison results: {str(e)}")
+    
+    def _get_visualization_paths(self) -> List[str]:
+        """Get paths to generated visualizations."""
+        return [
+            os.path.join(self.output_dir, "comprehensive_model_comparison.png"),
+            os.path.join(self.output_dir, "model_comparison_radar.png"),
+            os.path.join(self.output_dir, "model_metrics_heatmap.png")
+        ]
 
 
 def evaluate_model(model_type: str, model_path: str, vectorizer_path: str, 
@@ -468,25 +854,138 @@ def evaluate_model(model_type: str, model_path: str, vectorizer_path: str,
     return evaluator.evaluate()
 
 
-if __name__ == "__main__":
-    # Example usage
-    import argparse
+def evaluate_batch_models(model_configs: List[Dict[str, str]], data_path: str, 
+                          output_dir: str = "artifacts/evaluation") -> Dict[str, Any]:
+    """
+    Evaluate multiple models in batch and generate comparison.
     
-    parser = argparse.ArgumentParser(description="Evaluate Topic Model")
-    parser.add_argument("--model_type", type=str, required=True, help="Model type: lda or nmf")
-    parser.add_argument("--model_path", type=str, required=True, help="Path to trained model")
-    parser.add_argument("--vectorizer_path", type=str, required=True, help="Path to vectorizer")
-    parser.add_argument("--data_path", type=str, required=True, help="Path to preprocessed data")
+    Args:
+        model_configs: List of model configurations
+        data_path: Path to preprocessed data
+        output_dir: Output directory for results
+        
+    Returns:
+        Dictionary containing batch evaluation results
+    """
+    comparison = ModelComparison(output_dir)
+    return comparison.compare_models(model_configs, data_path)
+
+
+def auto_discover_and_evaluate(data_path: str, artifacts_dir: str = "artifacts", 
+                              output_dir: str = "artifacts/evaluation") -> Dict[str, Any]:
+    """
+    Automatically discover and evaluate all available models.
+    
+    Args:
+        data_path: Path to preprocessed data
+        artifacts_dir: Directory containing model artifacts
+        output_dir: Output directory for results
+        
+    Returns:
+        Dictionary containing evaluation results
+    """
+    logger = get_logger(__name__)
+    logger.info("Auto-discovering models for evaluation...")
+    
+    model_configs = []
+    
+    # Look for LDA models
+    lda_model_path = os.path.join(artifacts_dir, "lda_model.pkl")
+    vectorizer_path = os.path.join(artifacts_dir, "tfidf_vectorizer.pkl")
+    
+    if os.path.exists(lda_model_path) and os.path.exists(vectorizer_path):
+        model_configs.append({
+            'model_type': 'lda',
+            'model_path': lda_model_path,
+            'vectorizer_path': vectorizer_path,
+            'name': 'LDA Model'
+        })
+        logger.info("Found LDA model")
+    
+    # Look for NMF models
+    nmf_model_path = os.path.join(artifacts_dir, "nmf_model.pkl")
+    
+    if os.path.exists(nmf_model_path) and os.path.exists(vectorizer_path):
+        model_configs.append({
+            'model_type': 'nmf',
+            'model_path': nmf_model_path,
+            'vectorizer_path': vectorizer_path,
+            'name': 'NMF Model'
+        })
+        logger.info("Found NMF model")
+    
+    if not model_configs:
+        logger.warning("No models found for evaluation")
+        return {'error': 'No models found for evaluation'}
+    
+    logger.info(f"Found {len(model_configs)} models for evaluation")
+    return evaluate_batch_models(model_configs, data_path, output_dir)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Comprehensive Topic Model Evaluation")
+    parser.add_argument("--mode", type=str, choices=['single', 'batch', 'auto'], default='auto',
+                       help="Evaluation mode: single model, batch models, or auto-discover")
+    parser.add_argument("--model_type", type=str, choices=['lda', 'nmf'], help="Model type for single evaluation")
+    parser.add_argument("--model_path", type=str, help="Path to trained model")
+    parser.add_argument("--vectorizer_path", type=str, help="Path to vectorizer")
+    parser.add_argument("--data_path", type=str, default="artifacts/preprocessed_bbc_news.csv", 
+                       help="Path to preprocessed data")
     parser.add_argument("--output_dir", type=str, default="artifacts/evaluation", help="Output directory")
+    parser.add_argument("--artifacts_dir", type=str, default="artifacts", help="Artifacts directory for auto-discovery")
     
     args = parser.parse_args()
     
-    results = evaluate_model(
-        model_type=args.model_type,
-        model_path=args.model_path,
-        vectorizer_path=args.vectorizer_path,
-        data_path=args.data_path,
-        output_dir=args.output_dir
-    )
-    
-    print(f"Evaluation completed. Results: {results}")
+    if args.mode == 'single':
+        if not args.model_type or not args.model_path or not args.vectorizer_path:
+            print("Error: --model_type, --model_path, and --vectorizer_path are required for single mode")
+            sys.exit(1)
+        
+        results = evaluate_model(
+            model_type=args.model_type,
+            model_path=args.model_path,
+            vectorizer_path=args.vectorizer_path,
+            data_path=args.data_path,
+            output_dir=args.output_dir
+        )
+        print(f"Single model evaluation completed. Results: {results}")
+        
+    elif args.mode == 'batch':
+        # For batch mode, you would need to provide model configurations
+        # This is a placeholder - in practice, you'd load configs from a file
+        print("Batch mode requires model configurations. Use auto mode for automatic discovery.")
+        
+    elif args.mode == 'auto':
+        results = auto_discover_and_evaluate(
+            data_path=args.data_path,
+            artifacts_dir=args.artifacts_dir,
+            output_dir=args.output_dir
+        )
+        print(f"Auto-discovery evaluation completed. Results saved to {args.output_dir}")
+        
+        # Print summary
+        if 'individual_results' in results:
+            print("\nEvaluation Summary:")
+            for model_name, metrics in results['individual_results'].items():
+                if 'error' not in metrics:
+                    print(f"{model_name}:")
+                    print(f"  - Topic Diversity: {metrics.get('topic_diversity', 0.0):.4f}")
+                    print(f"  - Coherence Score: {metrics.get('coherence_score', 0.0):.4f}")
+                    
+                    # Handle None values for perplexity
+                    perplexity = metrics.get('perplexity')
+                    if perplexity is not None:
+                        print(f"  - Perplexity: {perplexity:.2f}")
+                    else:
+                        print(f"  - Perplexity: N/A")
+                    
+                    # Handle None values for silhouette score
+                    silhouette = metrics.get('silhouette_score')
+                    if silhouette is not None:
+                        print(f"  - Silhouette Score: {silhouette:.4f}")
+                    else:
+                        print(f"  - Silhouette Score: N/A")
+                    
+                    print(f"  - Number of Topics: {metrics.get('num_topics', 0)}")
+                else:
+                    print(f"{model_name}: Error - {metrics['error']}")

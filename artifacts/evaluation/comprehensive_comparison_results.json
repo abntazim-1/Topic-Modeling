@@ -1,24 +1,77 @@
 {
-    "lda_metrics": {
-        "topic_diversity": 0.78,
-        "coherence_score": -9.23359874421161,
-        "perplexity": -8.765440675336185,
-        "silhouette_score": null,
-        "num_topics": 0,
-        "evaluation_time": 1.765334
+    "timestamp": "2025-10-22 08:37:56",
+    "individual_results": {
+        "LDA Model": {
+            "coherence_score": 0.48594953521328443,
+            "topic_diversity": 0.79,
+            "silhouette_score": 0.5269428491592407,
+            "perplexity": -8.204944526018688,
+            "reconstruction_error": null,
+            "topic_intrusion_score": 1.0,
+            "num_topics": 10,
+            "evaluation_time": 36.696089
+        },
+        "NMF Model": {
+            "coherence_score": 0.7348012378434315,
+            "topic_diversity": 0.925,
+            "silhouette_score": 0.4202939093321704,
+            "perplexity": null,
+            "reconstruction_error": 45.21381649172955,
+            "topic_intrusion_score": 1.0,
+            "num_topics": 8,
+            "evaluation_time": 23.307969
+        }
     },
-    "nmf_metrics": {
-        "topic_diversity": 0.0,
-        "coherence_score": 0.0,
-        "perplexity": 0.0,
-        "silhouette_score": 0.0,
-        "num_topics": 0,
-        "evaluation_time": 0.0
+    "comparison_report": {
+        "summary": {
+            "topic_diversity": {
+                "mean": 0.8575,
+                "std": 0.0675,
+                "min": 0.79,
+                "max": 0.925
+            },
+            "coherence_score": {
+                "mean": 0.610375386528358,
+                "std": 0.12442585131507355,
+                "min": 0.48594953521328443,
+                "max": 0.7348012378434315
+            },
+            "silhouette_score": {
+                "mean": 0.4736183792457056,
+                "std": 0.05332446991353515,
+                "min": 0.4202939093321704,
+                "max": 0.5269428491592407
+            },
+            "perplexity": {
+                "mean": -8.204944526018688,
+                "std": 0.0,
+                "min": -8.204944526018688,
+                "max": -8.204944526018688
+            }
+        },
+        "winners": {
+            "topic_diversity": {
+                "model": "NMF Model",
+                "score": 0.925
+            },
+            "coherence_score": {
+                "model": "NMF Model",
+                "score": 0.7348012378434315
+            },
+            "silhouette_score": {
+                "model": "LDA Model",
+                "score": 0.5269428491592407
+            },
+            "perplexity": {
+                "model": "LDA Model",
+                "score": -8.204944526018688
+            }
+        },
+        "detailed_analysis": {}
     },
-    "comparison_summary": {
-        "topic_diversity_winner": "LDA",
-        "coherence_winner": "NMF",
-        "perplexity_winner": "LDA",
-        "silhouette_winner": "NMF"
+    "summary": {
+        "total_models": 2,
+        "successful_evaluations": 2,
+        "failed_evaluations": 0
     }
 }

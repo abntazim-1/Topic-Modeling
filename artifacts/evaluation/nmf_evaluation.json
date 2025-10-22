@@ -1,187 +1,379 @@
 {
     "model_type": "nmf",
-    "topics_csv": "artifacts/evaluation/nmf_topics.csv",
-    "evaluation_time": "2025-10-19 13:02:22",
+    "model_path": "artifacts\\nmf_model.pkl",
+    "vectorizer_path": "artifacts\\tfidf_vectorizer.pkl",
+    "data_path": "artifacts/preprocessed_bbc_news.csv",
+    "evaluation_time": "2025-10-22 08:37:54",
     "metrics": {
-        "topic_diversity": 1.0,
-        "num_topics": 8
+        "coherence_score": 0.7348012378434315,
+        "topic_diversity": 0.925,
+        "silhouette_score": 0.4202939093321704,
+        "perplexity": null,
+        "reconstruction_error": 45.21381649172955,
+        "topic_intrusion_score": 1.0,
+        "num_topics": 8,
+        "evaluation_time": 23.307969
     },
-    "top_words_per_topic": {
-        "topic_0": [
-            {
-                "word": "company",
-                "weight": 0.0234
-            },
-            {
-                "word": "business",
-                "weight": 0.0198
-            },
-            {
-                "word": "market",
-                "weight": 0.0176
-            },
-            {
-                "word": "firm",
-                "weight": 0.0165
-            },
-            {
-                "word": "sales",
-                "weight": 0.0154
-            }
-        ],
-        "topic_1": [
-            {
-                "word": "government",
-                "weight": 0.0256
-            },
-            {
-                "word": "minister",
-                "weight": 0.0234
-            },
-            {
-                "word": "party",
-                "weight": 0.0212
-            },
-            {
-                "word": "election",
-                "weight": 0.019
-            },
-            {
-                "word": "political",
-                "weight": 0.0168
-            }
-        ],
-        "topic_2": [
-            {
-                "word": "game",
-                "weight": 0.0245
-            },
-            {
-                "word": "player",
-                "weight": 0.0223
-            },
-            {
-                "word": "team",
-                "weight": 0.0201
-            },
-            {
-                "word": "football",
-                "weight": 0.0179
-            },
-            {
-                "word": "match",
-                "weight": 0.0157
-            }
-        ],
-        "topic_3": [
-            {
-                "word": "film",
-                "weight": 0.0267
-            },
-            {
-                "word": "movie",
-                "weight": 0.0245
-            },
-            {
-                "word": "actor",
-                "weight": 0.0223
-            },
-            {
-                "word": "director",
-                "weight": 0.0201
-            },
-            {
-                "word": "cinema",
-                "weight": 0.0179
-            }
-        ],
-        "topic_4": [
-            {
-                "word": "economy",
-                "weight": 0.0278
-            },
-            {
-                "word": "economic",
-                "weight": 0.0256
-            },
-            {
-                "word": "rate",
-                "weight": 0.0234
-            },
-            {
-                "word": "bank",
-                "weight": 0.0212
-            },
-            {
-                "word": "dollar",
-                "weight": 0.019
-            }
-        ],
-        "topic_5": [
-            {
-                "word": "technology",
-                "weight": 0.0289
-            },
-            {
-                "word": "computer",
-                "weight": 0.0267
-            },
-            {
-                "word": "software",
-                "weight": 0.0245
-            },
-            {
-                "word": "internet",
-                "weight": 0.0223
-            },
-            {
-                "word": "digital",
-                "weight": 0.0201
-            }
-        ],
-        "topic_6": [
-            {
-                "word": "health",
-                "weight": 0.03
-            },
-            {
-                "word": "medical",
-                "weight": 0.0278
-            },
-            {
-                "word": "doctor",
-                "weight": 0.0256
-            },
-            {
-                "word": "patient",
-                "weight": 0.0234
-            },
-            {
-                "word": "hospital",
-                "weight": 0.0212
-            }
-        ],
-        "topic_7": [
-            {
-                "word": "sport",
-                "weight": 0.0311
-            },
-            {
-                "word": "olympic",
-                "weight": 0.0289
-            },
-            {
-                "word": "champion",
-                "weight": 0.0267
-            },
-            {
-                "word": "athlete",
-                "weight": 0.0245
-            },
-            {
-                "word": "record",
-                "weight": 0.0223
-            }
-        ]
-    }
+    "topics": [
+        {
+            "topic_id": 0,
+            "words": [
+                [
+                    "software",
+                    0.905
+                ],
+                [
+                    "user",
+                    0.8282
+                ],
+                [
+                    "microsoft",
+                    0.7376
+                ],
+                [
+                    "site",
+                    0.721
+                ],
+                [
+                    "computer",
+                    0.6247
+                ],
+                [
+                    "security",
+                    0.5948
+                ],
+                [
+                    "virus",
+                    0.5745
+                ],
+                [
+                    "program",
+                    0.5664
+                ],
+                [
+                    "mail",
+                    0.485
+                ],
+                [
+                    "firm",
+                    0.4612
+                ]
+            ]
+        },
+        {
+            "topic_id": 1,
+            "words": [
+                [
+                    "film",
+                    2.5838
+                ],
+                [
+                    "award",
+                    1.1597
+                ],
+                [
+                    "star",
+                    0.7586
+                ],
+                [
+                    "good",
+                    0.7373
+                ],
+                [
+                    "actor",
+                    0.6249
+                ],
+                [
+                    "oscar",
+                    0.5896
+                ],
+                [
+                    "festival",
+                    0.5688
+                ],
+                [
+                    "director",
+                    0.5135
+                ],
+                [
+                    "actress",
+                    0.4998
+                ],
+                [
+                    "win",
+                    0.4344
+                ]
+            ]
+        },
+        {
+            "topic_id": 2,
+            "words": [
+                [
+                    "labour",
+                    1.5108
+                ],
+                [
+                    "party",
+                    1.2076
+                ],
+                [
+                    "election",
+                    1.0814
+                ],
+                [
+                    "tory",
+                    0.8809
+                ],
+                [
+                    "blair",
+                    0.7892
+                ],
+                [
+                    "government",
+                    0.7432
+                ],
+                [
+                    "brown",
+                    0.7175
+                ],
+                [
+                    "plan",
+                    0.5037
+                ],
+                [
+                    "conservative",
+                    0.4878
+                ],
+                [
+                    "campaign",
+                    0.4691
+                ]
+            ]
+        },
+        {
+            "topic_id": 3,
+            "words": [
+                [
+                    "win",
+                    1.0839
+                ],
+                [
+                    "world",
+                    0.6072
+                ],
+                [
+                    "play",
+                    0.5806
+                ],
+                [
+                    "final",
+                    0.573
+                ],
+                [
+                    "year",
+                    0.5535
+                ],
+                [
+                    "second",
+                    0.5363
+                ],
+                [
+                    "good",
+                    0.5305
+                ],
+                [
+                    "race",
+                    0.5048
+                ],
+                [
+                    "match",
+                    0.4954
+                ],
+                [
+                    "set",
+                    0.4883
+                ]
+            ]
+        },
+        {
+            "topic_id": 4,
+            "words": [
+                [
+                    "bn",
+                    1.0273
+                ],
+                [
+                    "rise",
+                    0.7996
+                ],
+                [
+                    "economy",
+                    0.756
+                ],
+                [
+                    "year",
+                    0.6695
+                ],
+                [
+                    "growth",
+                    0.6488
+                ],
+                [
+                    "sale",
+                    0.6264
+                ],
+                [
+                    "bank",
+                    0.5777
+                ],
+                [
+                    "company",
+                    0.5527
+                ],
+                [
+                    "fall",
+                    0.5495
+                ],
+                [
+                    "market",
+                    0.5173
+                ]
+            ]
+        },
+        {
+            "topic_id": 5,
+            "words": [
+                [
+                    "game",
+                    1.738
+                ],
+                [
+                    "england",
+                    1.1783
+                ],
+                [
+                    "player",
+                    0.6989
+                ],
+                [
+                    "ireland",
+                    0.6727
+                ],
+                [
+                    "play",
+                    0.651
+                ],
+                [
+                    "wales",
+                    0.562
+                ],
+                [
+                    "team",
+                    0.4921
+                ],
+                [
+                    "france",
+                    0.4869
+                ],
+                [
+                    "rugby",
+                    0.4793
+                ],
+                [
+                    "nation",
+                    0.4591
+                ]
+            ]
+        },
+        {
+            "topic_id": 6,
+            "words": [
+                [
+                    "music",
+                    1.2659
+                ],
+                [
+                    "album",
+                    1.0549
+                ],
+                [
+                    "band",
+                    0.978
+                ],
+                [
+                    "song",
+                    0.7289
+                ],
+                [
+                    "chart",
+                    0.6103
+                ],
+                [
+                    "number",
+                    0.5072
+                ],
+                [
+                    "single",
+                    0.5057
+                ],
+                [
+                    "record",
+                    0.4687
+                ],
+                [
+                    "release",
+                    0.4508
+                ],
+                [
+                    "sale",
+                    0.4113
+                ]
+            ]
+        },
+        {
+            "topic_id": 7,
+            "words": [
+                [
+                    "mobile",
+                    1.3281
+                ],
+                [
+                    "technology",
+                    0.9185
+                ],
+                [
+                    "phone",
+                    0.8692
+                ],
+                [
+                    "people",
+                    0.7333
+                ],
+                [
+                    "service",
+                    0.658
+                ],
+                [
+                    "broadband",
+                    0.5919
+                ],
+                [
+                    "digital",
+                    0.5746
+                ],
+                [
+                    "music",
+                    0.5693
+                ],
+                [
+                    "tv",
+                    0.5417
+                ],
+                [
+                    "device",
+                    0.525
+                ]
+            ]
+        }
+    ]
 }
