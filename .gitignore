@@ -109,3 +109,43 @@ docker/*.env
 docker/.env
 
 
+# Model artifacts
+artifacts/
+*.pkl
+*.joblib
+*.model
+*.h5
+*.hdf5
+
+# Evaluation results
+evaluation/
+results/
+metrics/
+reports/
+
+# Preprocessed data
+preprocessed_*.csv
+preprocessed_*.json
+
+# spaCy models
+spacy_models/
+en_core_web_*
+
+# Large data files (but keep config files)
+*.csv
+*.tsv
+*.json
+*.parquet
+!config/*.yaml
+!config/*.yml
+
+# Logs directory
+logs/
+*.log.*
+
+# MkDocs site
+site/
+
+# Jupyter notebook outputs (keep notebooks but not outputs)
+*.ipynb
+!notebooks/*.ipynb
