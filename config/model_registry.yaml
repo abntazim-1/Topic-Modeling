@@ -1,0 +1,64 @@
+models:
+  lda:
+    name: "Latent Dirichlet Allocation"
+    description: "Probabilistic topic model using LDA algorithm"
+    model_path: "artifacts/lda_model.pkl"
+    vectorizer_path: "artifacts/tfidf_vectorizer.pkl"
+    topics_path: "artifacts/lda_topics.csv"
+    default_topics: 10
+    max_topics: 20
+    min_topics: 3
+    parameters:
+      passes: 20
+      chunksize: 2000
+      alpha: "auto"
+      eta: "auto"
+      iterations: 800
+      random_state: 42
+    evaluation_metrics:
+      - "coherence_score"
+      - "perplexity"
+      - "topic_diversity"
+    
+  nmf:
+    name: "Non-negative Matrix Factorization"
+    description: "Linear topic model using NMF algorithm"
+    model_path: "artifacts/nmf_model.pkl"
+    vectorizer_path: "artifacts/tfidf_vectorizer.pkl"
+    topics_path: "artifacts/nmf_topics.csv"
+    default_topics: 10
+    max_topics: 20
+    min_topics: 3
+    parameters:
+      init: "random"
+      max_iter: 1000
+      alpha: 0.0
+      l1_ratio: 0.0
+      beta_loss: "frobenius"
+      solver: "cd"
+      random_state: 42
+    evaluation_metrics:
+      - "reconstruction_error"
+      - "topic_diversity"
+      - "silhouette_score"
+
+# Model comparison and evaluation settings
+evaluation:
+  default_metrics:
+    - "coherence_score"
+    - "topic_diversity"
+    - "silhouette_score"
+  output_dir: "artifacts/evaluation"
+  save_plots: true
+  plot_formats: ["png", "html"]
+
+# Data preprocessing settings
+preprocessing:
+  default_config:
+    text_column: "content"
+    spacy_model: "en_core_web_lg"
+    min_token_length: 2
+    gen_bigrams: true
+    gen_trigrams: true
+    output_dir: "artifacts/"
+    output_file: "preprocessed_bbc_news.csv"

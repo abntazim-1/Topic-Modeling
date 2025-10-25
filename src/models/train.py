@@ -102,14 +102,26 @@ class TopicModelTrainer:
             if not self.texts:
                 raise DataValidationError("No texts available for vectorization.")
 
+            # Get comprehensive stopwords with fallback
+            try:
+                from src.data.data_preprocessing import get_comprehensive_stopwords
+                comprehensive_stopwords = get_comprehensive_stopwords()
+            except ImportError:
+                # Fallback if spaCy/NLTK not available
+                comprehensive_stopwords = ['said', 'mr', 'mrs', 'one', 'two', 'year', 'new', 'us', 'like', 
+                                         'time', 'people', 'say', 'month', 'day', 'bn']
+                self.logger.warning("Using fallback stopwords - spaCy/NLTK not available")
+            
             if self.vectorizer_type == "tfidf":
                 self.vectorizer = TFIDFVectorizerWrapper(
-                    ngram_range=(1, 1), min_df=3, max_df=0.9, max_features=30000
+                    ngram_range=(1, 1), min_df=3, max_df=0.9, max_features=30000,
+                    stop_words=comprehensive_stopwords
                 )
             elif self.vectorizer_type == "bow":
                 # Fallback: approximate BoW with TF-IDF configured as unigram, higher max_features
                 self.vectorizer = TFIDFVectorizerWrapper(
-                    ngram_range=(1, 1), min_df=2, max_df=0.95, max_features=30000
+                    ngram_range=(1, 1), min_df=2, max_df=0.95, max_features=30000,
+                    stop_words=comprehensive_stopwords
                 )
             else:
                 raise ValueError(f"Unsupported vectorizer type: {self.vectorizer_type}")

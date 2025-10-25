@@ -4,5 +4,14 @@ data:
   delimiter: ','
   encoding: 'utf-8'
   allow_duplicates: false
+
+api:
+  host: '0.0.0.0'
+  port: 5000
+  debug: false
+  models_path: 'artifacts'
+  max_topics: 20
+  default_topics: 10
+
 logging:
   level: 'INFO'

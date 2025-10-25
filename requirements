@@ -15,6 +15,7 @@ spacy>=3.8.0
 
 # Additional utilities
 regex>=2022.0.0
+click>=8.0.0
 
 # Optional: Jupyter notebook support
 jupyter>=1.0.0

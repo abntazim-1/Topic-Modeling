@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Modeling Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+        .feature-card {
+            transition: transform 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .model-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .status-loaded {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-not-loaded {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .prediction-card {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .topic-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .result-section {
+            display: none;
+        }
+        .error-alert {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-brain me-2"></i>Topic Modeling Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text" id="api-status">
+                    <i class="fas fa-circle text-danger me-1"></i>Connecting...
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Topic Modeling Dashboard</h1>
+                    <p class="lead mb-4">Discover hidden topics in your text data using advanced LDA and NMF algorithms. Analyze, visualize, and understand your content like never before.</p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-light btn-lg" onclick="scrollToSection('prediction-section')">
+                            <i class="fas fa-play me-2"></i>Start Analysis
+                        </button>
+                        <button class="btn btn-outline-light btn-lg" onclick="scrollToSection('models-section')">
+                            <i class="fas fa-cogs me-2"></i>Manage Models
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="text-center">
+                        <i class="fas fa-chart-line" style="font-size: 8rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-robot text-primary mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="card-title">AI-Powered Analysis</h5>
+                            <p class="card-text">Leverage state-of-the-art LDA and NMF algorithms to uncover hidden patterns in your text data.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-bar text-success mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="card-title">Real-time Visualization</h5>
+                            <p class="card-text">Interactive charts and graphs to visualize topic distributions and model performance.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-bolt text-warning mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="card-title">Fast Processing</h5>
+                            <p class="card-text">Process large volumes of text data quickly with optimized algorithms and batch processing.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Models Section -->
+    <section id="models-section" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Model Management</h2>
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">LDA Model</h5>
+                            <span id="lda-status" class="model-status status-not-loaded">Not Loaded</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Latent Dirichlet Allocation model for topic discovery.</p>
+                            <button class="btn btn-primary" onclick="loadModel('lda')">
+                                <i class="fas fa-download me-2"></i>Load Model
+                            </button>
+                            <button class="btn btn-outline-primary ms-2" onclick="getModelTopics('lda')">
+                                <i class="fas fa-eye me-2"></i>View Topics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">NMF Model</h5>
+                            <span id="nmf-status" class="model-status status-not-loaded">Not Loaded</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Non-negative Matrix Factorization model for topic modeling.</p>
+                            <button class="btn btn-primary" onclick="loadModel('nmf')">
+                                <i class="fas fa-download me-2"></i>Load Model
+                            </button>
+                            <button class="btn btn-outline-primary ms-2" onclick="getModelTopics('nmf')">
+                                <i class="fas fa-eye me-2"></i>View Topics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prediction Section -->
+    <section id="prediction-section" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Topic Prediction</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="prediction-form">
+                                <div class="mb-3">
+                                    <label for="input-text" class="form-label">Enter your text for analysis:</label>
+                                    <textarea class="form-control" id="input-text" rows="5" 
+                                        placeholder="Paste your text here for topic analysis..."></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="model-type" class="form-label">Model Type:</label>
+                                        <select class="form-select" id="model-type">
+                                            <option value="lda">LDA (Latent Dirichlet Allocation)</option>
+                                            <option value="nmf">NMF (Non-negative Matrix Factorization)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="num-topics" class="form-label">Number of Topics:</label>
+                                        <input type="number" class="form-control" id="num-topics" value="5" min="1" max="20">
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-search me-2"></i>Analyze Topics
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="result-section py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Analysis Results</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div id="prediction-results"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Error Alert -->
+    <div class="error-alert alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span id="error-message">An error occurred</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner position-fixed top-50 start-50 translate-middle">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Topic Modeling Dashboard</h5>
+                    <p class="mb-0">Powered by advanced machine learning algorithms</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">&copy; 2024 Topic Modeling Project. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script>
+        // API Configuration
+        const API_BASE_URL = window.location.origin;
+        
+        // Global state
+        let modelsStatus = {
+            lda: false,
+            nmf: false
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAPIHealth();
+            loadModelsStatus();
+        });
+
+        // Check API health
+        async function checkAPIHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    document.getElementById('api-status').innerHTML = 
+                        '<i class="fas fa-circle text-success me-1"></i>Connected';
+                    modelsStatus = data.models_loaded;
+                    updateModelStatus();
+                } else {
+                    throw new Error('API not healthy');
+                }
+            } catch (error) {
+                document.getElementById('api-status').innerHTML = 
+                    '<i class="fas fa-circle text-danger me-1"></i>Disconnected';
+                showError('Unable to connect to API server');
+            }
+        }
+
+        // Load models status
+        async function loadModelsStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/models`);
+                const data = await response.json();
+                
+                modelsStatus.lda = data.models.lda.loaded;
+                modelsStatus.nmf = data.models.nmf.loaded;
+                updateModelStatus();
+            } catch (error) {
+                console.error('Failed to load models status:', error);
+            }
+        }
+
+        // Update model status display
+        function updateModelStatus() {
+            const ldaStatus = document.getElementById('lda-status');
+            const nmfStatus = document.getElementById('nmf-status');
+            
+            if (modelsStatus.lda) {
+                ldaStatus.textContent = 'Loaded';
+                ldaStatus.className = 'model-status status-loaded';
+            } else {
+                ldaStatus.textContent = 'Not Loaded';
+                ldaStatus.className = 'model-status status-not-loaded';
+            }
+            
+            if (modelsStatus.nmf) {
+                nmfStatus.textContent = 'Loaded';
+                nmfStatus.className = 'model-status status-loaded';
+            } else {
+                nmfStatus.textContent = 'Not Loaded';
+                nmfStatus.className = 'model-status status-not-loaded';
+            }
+        }
+
+        // Load a specific model
+        async function loadModel(modelType) {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/models/${modelType}/load`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    modelsStatus[modelType] = true;
+                    updateModelStatus();
+                    showSuccess(`${modelType.toUpperCase()} model loaded successfully!`);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to load model');
+                }
+            } catch (error) {
+                showError(`Failed to load ${modelType.toUpperCase()} model: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Get model topics
+        async function getModelTopics(modelType) {
+            if (!modelsStatus[modelType]) {
+                showError(`${modelType.toUpperCase()} model is not loaded. Please load it first.`);
+                return;
+            }
+            
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/models/${modelType}/topics?num_words=10`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayTopics(data.topics, modelType);
+                } else {
+                    throw new Error(data.error || 'Failed to get topics');
+                }
+            } catch (error) {
+                showError(`Failed to get topics: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display topics
+        function displayTopics(topics, modelType) {
+            const modal = new bootstrap.Modal(document.getElementById('topicsModal'));
+            const modalBody = document.getElementById('topics-modal-body');
+            
+            let html = `<h5>${modelType.toUpperCase()} Model Topics</h5>`;
+            topics.forEach((topic, index) => {
+                html += `
+                    <div class="topic-item">
+                        <h6>Topic ${topic.topic_id}</h6>
+                        <div class="d-flex flex-wrap gap-1">
+                            ${topic.words.map(word => 
+                                `<span class="badge bg-primary">${word.word} (${word.weight.toFixed(3)})</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            modalBody.innerHTML = html;
+            modal.show();
+        }
+
+        // Handle prediction form submission
+        document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const text = document.getElementById('input-text').value.trim();
+            const modelType = document.getElementById('model-type').value;
+            const numTopics = parseInt(document.getElementById('num-topics').value);
+            
+            if (!text) {
+                showError('Please enter some text for analysis');
+                return;
+            }
+            
+            if (!modelsStatus[modelType]) {
+                showError(`${modelType.toUpperCase()} model is not loaded. Please load it first.`);
+                return;
+            }
+            
+            await predictTopics(text, modelType, numTopics);
+        });
+
+        // Predict topics for text
+        async function predictTopics(text, modelType, numTopics) {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        model_type: modelType,
+                        num_topics: numTopics
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPredictionResults(data);
+                } else {
+                    throw new Error(data.error || 'Prediction failed');
+                }
+            } catch (error) {
+                showError(`Prediction failed: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display prediction results
+        function displayPredictionResults(data) {
+            const resultsContainer = document.getElementById('prediction-results');
+            const resultSection = document.querySelector('.result-section');
+            
+            let html = `
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Analysis Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Input Text:</h6>
+                                <p class="text-muted">${data.input_text.substring(0, 200)}${data.input_text.length > 200 ? '...' : ''}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Model Information:</h6>
+                                <p><strong>Model:</strong> ${data.model_type.toUpperCase()}</p>
+                                <p><strong>Dominant Topic:</strong> ${data.prediction.dominant_topic}</p>
+                                <p><strong>Confidence:</strong> ${(data.prediction.confidence * 100).toFixed(1)}%</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <h6>Topic Distribution:</h6>
+                        <div class="row">
+            `;
+            
+            data.prediction.topics.forEach((topic, index) => {
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Topic ${topic.topic_id} (${(topic.probability * 100).toFixed(1)}%)</h6>
+                                <div class="d-flex flex-wrap gap-1">
+                                    ${topic.topic_words.map(word => 
+                                        `<span class="badge bg-secondary">${word.word} (${word.weight.toFixed(3)})</span>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            resultsContainer.innerHTML = html;
+            resultSection.style.display = 'block';
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.querySelector('.loading-spinner').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.querySelector('.loading-spinner').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.querySelector('.error-alert').style.display = 'block';
+            setTimeout(() => {
+                document.querySelector('.error-alert').style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            // You can implement a success notification here
+            console.log('Success:', message);
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+
+    <!-- Topics Modal -->
+    <div class="modal fade" id="topicsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Model Topics</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="topics-modal-body">
+                    <!-- Topics will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -12,8 +12,33 @@ from src.utils.exceptions import AppException
 
 
 def merge_stopwords(custom: List[str], nlp) -> set:
+    """Merge spaCy default stopwords with custom stopwords."""
     s = set(nlp.Defaults.stop_words).union({w.lower() for w in custom})
     return s
+
+def get_comprehensive_stopwords() -> List[str]:
+    """Get comprehensive stopwords combining NLTK English stopwords with news-specific words."""
+    try:
+        from nltk.corpus import stopwords
+        import nltk
+        nltk.download('stopwords', quiet=True)
+        
+        # Get NLTK English stopwords
+        nltk_stopwords = set(stopwords.words('english'))
+        
+        # Add news-specific noisy words
+        news_stopwords = {'said', 'mr', 'mrs', 'one', 'two', 'year', 'new', 'us', 'like', 
+                         'time', 'people', 'say', 'month', 'day', 'bn'}
+        
+        # Combine both sets
+        comprehensive_stopwords = nltk_stopwords.union(news_stopwords)
+        
+        return list(comprehensive_stopwords)
+        
+    except Exception as e:
+        # Fallback to basic stopwords if NLTK is not available
+        return ['said', 'mr', 'mrs', 'one', 'two', 'year', 'new', 'us', 'like', 
+                'time', 'people', 'say', 'month', 'day', 'bn']
 
 @dataclass
 class PreprocessingConfig:
@@ -21,7 +46,7 @@ class PreprocessingConfig:
     Configuration for text preprocessing.
     """
     text_column: str = "content"
-    stopwords: List[str] = field(default_factory=lambda: ['said', 'mr', 'say', 'also', 'would', 'one', 'two', 'us'])
+    stopwords: List[str] = field(default_factory=get_comprehensive_stopwords)
     spacy_model: str = "en_core_web_lg"
     output_dir: str = "artifacts/"
     min_token_length: int = 2
